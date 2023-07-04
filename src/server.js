@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const router = require('./routers');
 const errorMiddleware = require('./middlewares/error.middleware');
-require('dotenv').config();
 
 const app = express();
 
@@ -19,7 +19,7 @@ const mongoURI = process.env.DB_URI || 'mongodb://127.0.0.1:27017/toeic-test';
 })();
 
 app.use(express.json());
-app.use(router);
+app.use('/api/v1/', router);
 
 app.use(errorMiddleware);
 
