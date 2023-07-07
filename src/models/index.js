@@ -1,2 +1,5 @@
-module.exports.User = require('./user.model');
-module.exports.FlashCard = require('./flashCard.model');
+module.exports = {
+    User: require('./user.model'),
+    FlashCard: require('./flashCard.model'),
+    Topic: require('./topic.model'),
+};

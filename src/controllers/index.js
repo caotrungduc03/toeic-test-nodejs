@@ -1,3 +1,6 @@
-module.exports.authController = require('./auth.controller');
-module.exports.userController = require('./user.controller');
-module.exports.flashCardController = require('./flashCard.controller');
+module.exports = {
+    authController: require('./auth.controller'),
+    userController: require('./user.controller'),
+    flashCardController: require('./flashCard.controller'),
+    topicController: require('./topic.controller'),
+};
