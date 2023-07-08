@@ -15,7 +15,12 @@ const courseSchema = new Schema(
             required: true,
         },
         lessons: [],
-        topics: [],
+        topics: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Topic',
+            },
+        ],
     },
     {
         timestamps: true,

@@ -9,10 +9,10 @@ const topicSchema = new Schema(
             required: true,
             trim: true,
         },
-        courseName: {
-            type: String,
+        course: {
+            type: Schema.Types.ObjectId,
+            ref: 'Course',
             required: true,
-            trim: true,
         },
         cards: [],
     },

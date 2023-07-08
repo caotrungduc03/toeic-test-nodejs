@@ -1,9 +1,9 @@
-const { Course } = require('../models');
+const { Course, Topic } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const getCourses = catchAsync(async (req, res) => {
-    const courses = await Course.find();
+    const courses = await Course.find().populate('topics');
 
     res.status(200).json({
         courses,
@@ -12,7 +12,7 @@ const getCourses = catchAsync(async (req, res) => {
 
 const getCourse = catchAsync(async (req, res) => {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId);
+    const course = await Course.findById(courseId).populate('topics');
 
     if (!course) {
         throw new ApiError('Course not found', 404);
@@ -67,6 +67,10 @@ const deleteCourse = catchAsync(async (req, res) => {
     if (!deletedCourse) {
         throw new ApiError('Course not found', 404);
     }
+
+    await Topic.deleteMany({
+        course: deletedCourse._id,
+    });
 
     res.status(204).json();
 });
