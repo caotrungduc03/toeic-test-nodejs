@@ -3,6 +3,7 @@ const userRouter = require('./user.router');
 const authRouter = require('./auth.router');
 const courseRouter = require('./course.router');
 const topicRouter = require('./topic.router');
+const flashCardRouter = require('./flashCard.router');
 
 const router = express.Router();
 
@@ -22,6 +23,10 @@ const routes = [
     {
         path: '/topics',
         route: topicRouter,
+    },
+    {
+        path: '/flash-cards',
+        route: flashCardRouter,
     },
 ];
 
