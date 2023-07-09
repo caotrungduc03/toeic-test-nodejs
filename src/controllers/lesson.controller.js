@@ -36,7 +36,7 @@ const updateLesson = catchAsync(async (req, res) => {
     if (!lesson) {
         throw new ApiError('Lesson not found!', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({ user });
+    res.status(httpStatus.OK).json({ lesson });
 });
 
 const deleteLesson = catchAsync(async (req, res) => {
