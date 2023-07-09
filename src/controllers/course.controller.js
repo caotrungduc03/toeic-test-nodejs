@@ -68,9 +68,14 @@ const deleteCourse = catchAsync(async (req, res) => {
         throw new ApiError('Course not found', 404);
     }
 
-    await Topic.deleteMany({
-        course: deletedCourse._id,
-    });
+    await Promise.all([
+        Topic.deleteMany({
+            course: deletedCourse._id,
+        }),
+        FlashCard.deleteMany({
+            course: deletedCourse._id,
+        }),
+    ]);
 
     res.status(204).json();
 });

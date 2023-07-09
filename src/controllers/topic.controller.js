@@ -1,9 +1,9 @@
-const { Topic, Course } = require('../models');
+const { Topic, Course, FlashCard } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const getTopics = catchAsync(async (req, res) => {
-    const topics = await Topic.find().populate('course');
+    const topics = await Topic.find().populate(['course', 'cards']);
     res.status(200).json({
         topics,
     });
@@ -11,7 +11,7 @@ const getTopics = catchAsync(async (req, res) => {
 
 const getTopic = catchAsync(async (req, res) => {
     const { topicId } = req.params;
-    const topic = await Topic.findById(topicId).populate('course');
+    const topic = await Topic.findById(topicId).populate(['course', 'cards']);
 
     if (!topic) {
         throw new ApiError('Topic not found', 404);
@@ -59,7 +59,8 @@ const createTopic = catchAsync(async (req, res) => {
 
 const updateTopic = catchAsync(async (req, res) => {
     const { topicId } = req.params;
-    const { topicName, courseName, ...othersRawTopic } = req.body;
+    const rawTopic = req.body;
+    const { topicName, courseName } = rawTopic;
 
     const course = await Course.findOne({ name: courseName });
     if (!course) {
@@ -69,7 +70,7 @@ const updateTopic = catchAsync(async (req, res) => {
     const updatedTopic = await Topic.findByIdAndUpdate(
         topicId,
         {
-            ...othersRawTopic,
+            ...rawTopic,
             name: topicName,
             course: course._id,
         },
@@ -95,9 +96,16 @@ const deleteTopic = catchAsync(async (req, res) => {
         throw new ApiError('Topic not found', 404);
     }
 
-    await Course.findByIdAndUpdate(deletedTopic.course, {
-        $pull: { topics: topicId },
-    });
+    await Promise.all([
+        Course.findByIdAndUpdate(deletedTopic.course, {
+            $pull: {
+                topics: topicId,
+            },
+        }),
+        FlashCard.deleteMany({
+            topic: topicId,
+        }),
+    ]);
 
     res.status(204).json();
 });

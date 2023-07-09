@@ -1,9 +1,9 @@
-const { FlashCard } = require('../models');
+const { FlashCard, Topic } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const getFlashCards = catchAsync(async (req, res) => {
-    const flashCards = await FlashCard.find();
+    const flashCards = await FlashCard.find().populate(['course', 'topic']);
     res.status(200).json({
         flashCards,
     });
@@ -11,7 +11,10 @@ const getFlashCards = catchAsync(async (req, res) => {
 
 const getFlashCard = catchAsync(async (req, res) => {
     const { flashCardId } = req.params;
-    const flashCard = await FlashCard.findById(flashCardId);
+    const flashCard = await FlashCard.findById(flashCardId).populate([
+        'course',
+        'topic',
+    ]);
 
     if (!flashCard) {
         throw new ApiError('Flash card not found', 404);
@@ -35,19 +38,45 @@ const createFlashCard = catchAsync(async (req, res) => {
         throw new ApiError('Flash card is already exists', 400);
     }
 
-    const flashCard = await FlashCard.create(rawFlashCard);
+    const topic = await Topic.findOne({ name: topicName });
+    if (!topic) {
+        throw new ApiError('Topic not found', 404);
+    }
+
+    delete rawFlashCard.topicName;
+
+    const flashCard = await FlashCard.create({
+        ...rawFlashCard,
+        topic: topic._id,
+        course: topic.course,
+    });
+
+    topic.cards.push(flashCard._id);
+    await topic.save();
 
     res.status(201).json({
         flashCard,
+        updatedTopic: topic,
     });
 });
 
 const updateFlashCard = catchAsync(async (req, res) => {
     const { flashCardId } = req.params;
     const rawFlashCard = req.body;
+    const { topicName } = rawFlashCard;
+
+    const topic = await Topic.findOne({ name: topicName });
+    if (!topic) {
+        throw new ApiError('Topic not found', 404);
+    }
+
     const updatedFlashCard = await FlashCard.findByIdAndUpdate(
         flashCardId,
-        rawFlashCard,
+        {
+            ...rawFlashCard,
+            topic: topic._id,
+            course: topic.course,
+        },
         {
             new: true,
         },
@@ -69,6 +98,12 @@ const deleteFlashCard = catchAsync(async (req, res) => {
     if (!deletedFlashCard) {
         throw new ApiError('Flash card not found', 404);
     }
+
+    await Topic.findByIdAndUpdate(deletedFlashCard.topic, {
+        $pull: {
+            cards: flashCardId,
+        },
+    });
 
     res.status(204).json();
 });

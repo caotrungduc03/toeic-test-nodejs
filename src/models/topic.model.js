@@ -14,7 +14,12 @@ const topicSchema = new Schema(
             ref: 'Course',
             required: true,
         },
-        cards: [],
+        cards: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'FlashCard',
+            },
+        ],
     },
     {
         timestamps: true,

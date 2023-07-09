@@ -25,10 +25,15 @@ const flashCardSchema = new Schema(
             type: String,
             trim: true,
         },
-        topicName: {
-            type: String,
+        topic: {
+            type: Schema.Types.ObjectId,
+            ref: 'Topic',
             required: true,
-            trim: true,
+        },
+        course: {
+            type: Schema.Types.ObjectId,
+            ref: 'Course',
+            required: true,
         },
     },
     {
