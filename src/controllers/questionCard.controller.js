@@ -2,10 +2,13 @@ const catchAsync = require('../utils/catchAsync');
 const { QuestionCard } = require('../models');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const response = require('../utils/response');
 
 const getQuestionCards = catchAsync(async (req, res) => {
     const questionCards = await QuestionCard.find();
-    res.status(httpStatus.OK).json({ questionCards });
+    res.status(httpStatus.OK).json(
+        response(httpStatus.OK, 'Success', questionCards),
+    );
 });
 
 const getQuestionCard = catchAsync(async (req, res) => {
@@ -14,7 +17,9 @@ const getQuestionCard = catchAsync(async (req, res) => {
     if (!questionCard) {
         throw new ApiError('QuestionCard not found!', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({ questionCard });
+    res.status(httpStatus.OK).json(
+        response(httpStatus.OK, 'Success', questionCard),
+    );
 });
 
 const createQuestionCard = catchAsync(async (req, res) => {
@@ -27,7 +32,9 @@ const createQuestionCard = catchAsync(async (req, res) => {
         );
     }
     const questionCard = await QuestionCard.create(newQuestionCard);
-    res.status(httpStatus.CREATED).json({ questionCard });
+    res.status(httpStatus.CREATED).json(
+        response(httpStatus.CREATED, 'Created', questionCard),
+    );
 });
 
 const updateQuestionCard = catchAsync(async (req, res) => {
@@ -40,7 +47,9 @@ const updateQuestionCard = catchAsync(async (req, res) => {
     if (!questionCard) {
         throw new ApiError('QuestionCard not found', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({ questionCard });
+    res.status(httpStatus.OK).json(
+        response(httpStatus.OK, 'Updated', questionCard),
+    );
 });
 
 const deleteQuestionCard = catchAsync(async (req, res) => {
@@ -49,7 +58,7 @@ const deleteQuestionCard = catchAsync(async (req, res) => {
     if (!questionCard) {
         throw new ApiError('QuestionCard not found', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({});
+    res.status(httpStatus.OK).json(response(httpStatus.NO_CONTENT));
 });
 
 module.exports = {

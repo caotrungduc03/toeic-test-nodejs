@@ -2,10 +2,11 @@ const { Lesson } = require('../models');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
+const response = require('../utils/response');
 
 const getLessons = catchAsync(async (req, res) => {
     const lessons = await Lesson.find();
-    res.status(httpStatus.OK).json({ lessons });
+    res.status(httpStatus.OK).json(response(httpStatus.OK, 'Success', lessons));
 });
 const getLesson = catchAsync(async (req, res) => {
     const { lessonId } = req.params;
@@ -13,7 +14,7 @@ const getLesson = catchAsync(async (req, res) => {
     if (!lesson) {
         throw new ApiError('Lesson not found!', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({ lesson });
+    res.status(httpStatus.OK).json(response(httpStatus.OK, 'Success', lesson));
 });
 
 const createLesson = catchAsync(async (req, res) => {
@@ -26,7 +27,9 @@ const createLesson = catchAsync(async (req, res) => {
         );
     }
     const lesson = await Lesson.create(newLesson);
-    res.status(httpStatus.CREATED).json({ lesson });
+    res.status(httpStatus.CREATED).json(
+        response(httpStatus.CREATED, 'Created', lesson),
+    );
 });
 
 const updateLesson = catchAsync(async (req, res) => {
@@ -36,7 +39,7 @@ const updateLesson = catchAsync(async (req, res) => {
     if (!lesson) {
         throw new ApiError('Lesson not found!', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({ lesson });
+    res.status(httpStatus.OK).json(response(httpStatus.OK, 'Updated', lesson));
 });
 
 const deleteLesson = catchAsync(async (req, res) => {
@@ -45,7 +48,7 @@ const deleteLesson = catchAsync(async (req, res) => {
     if (!lesson) {
         throw new ApiError('Lesson not found', httpStatus.NOT_FOUND);
     }
-    res.status(httpStatus.OK).json({});
+    res.status(httpStatus.OK).json(response(httpStatus.NO_CONTENT));
 });
 
 module.exports = {
