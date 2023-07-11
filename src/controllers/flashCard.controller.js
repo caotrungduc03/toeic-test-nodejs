@@ -1,12 +1,11 @@
 const { FlashCard, Topic } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
+const response = require('../utils/response');
 
 const getFlashCards = catchAsync(async (req, res) => {
     const flashCards = await FlashCard.find().populate(['course', 'topic']);
-    res.status(200).json({
-        flashCards,
-    });
+    res.status(200).json(response(200, 'Success', flashCards));
 });
 
 const getFlashCard = catchAsync(async (req, res) => {
@@ -20,9 +19,7 @@ const getFlashCard = catchAsync(async (req, res) => {
         throw new ApiError('Flash card not found', 404);
     }
 
-    res.status(200).json({
-        flashCard,
-    });
+    res.status(200).json(response(200, 'Success', flash));
 });
 
 const createFlashCard = catchAsync(async (req, res) => {
@@ -54,10 +51,7 @@ const createFlashCard = catchAsync(async (req, res) => {
     topic.cards.push(flashCard._id);
     await topic.save();
 
-    res.status(201).json({
-        flashCard,
-        updatedTopic: topic,
-    });
+    res.status(201).json(response(201, 'Created', flashCard));
 });
 
 const updateFlashCard = catchAsync(async (req, res) => {
@@ -86,9 +80,7 @@ const updateFlashCard = catchAsync(async (req, res) => {
         throw new ApiError('Flash card not found', 404);
     }
 
-    res.status(200).json({
-        updatedFlashCard,
-    });
+    res.status(200).json(response(200, 'Updated', updatedFlashCard));
 });
 
 const deleteFlashCard = catchAsync(async (req, res) => {
