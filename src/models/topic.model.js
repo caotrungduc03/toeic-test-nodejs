@@ -20,6 +20,12 @@ const topicSchema = new Schema(
                 ref: 'FlashCard',
             },
         ],
+        questionCard: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'QuestionCard',
+            },
+        ],
     },
     {
         timestamps: true,

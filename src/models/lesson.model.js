@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const lessonSchema = new Schema({
-    name: {
-        type: String,
-        required: true,
-    },
     children: [
         {
             title: {
@@ -18,6 +14,14 @@ const lessonSchema = new Schema({
             },
         },
     ],
+    course: {
+        type: Schema.Types.ObjectId,
+        ref: 'Course',
+        required: true,
+    },
+    orderIndex: {
+        type: Number,
+    },
 });
 
 const Lesson = mongoose.model('Lesson', lessonSchema);

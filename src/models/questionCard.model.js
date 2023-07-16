@@ -2,10 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const questionCardSchema = new Schema({
-    // courseName: {
-    //     type: String,
-    //     required: true,
-    // },
+    paragraphs: {
+        type: String,
+    },
     question: [
         {
             hint: {
@@ -22,6 +21,7 @@ const questionCardSchema = new Schema({
             texts: {
                 type: String,
                 required: true,
+                trim: true,
             },
         },
     ],
@@ -34,6 +34,7 @@ const questionCardSchema = new Schema({
             choices: [
                 {
                     type: String,
+                    required: true,
                 },
             ],
         },
@@ -41,6 +42,20 @@ const questionCardSchema = new Schema({
     orderIndex: {
         type: Number,
     },
+    topic: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Topic',
+            require: true,
+        },
+    ],
+    course: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Course',
+            require: true,
+        },
+    ],
 });
 
 const QuestionCard = mongoose.model('QuestionCard', questionCardSchema);

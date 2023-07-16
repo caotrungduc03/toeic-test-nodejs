@@ -4,14 +4,17 @@ const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
 
 const getCourses = catchAsync(async (req, res) => {
-    const courses = await Course.find().populate('topics');
+    const courses = await Course.find().populate(['topics', 'lessons']);
 
     res.status(200).json(response(200, 'Success', courses));
 });
 
 const getCourse = catchAsync(async (req, res) => {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate('topics');
+    const course = await Course.findById(courseId).populate([
+        'topics',
+        'lessons',
+    ]);
 
     if (!course) {
         throw new ApiError('Course not found', 404);

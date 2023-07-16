@@ -14,7 +14,12 @@ const courseSchema = new Schema(
             enum: ['Practice test', 'Vocabulary', 'Grammar'],
             required: true,
         },
-        lessons: [],
+        lessons: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Lesson',
+            },
+        ],
         topics: [
             {
                 type: Schema.Types.ObjectId,
