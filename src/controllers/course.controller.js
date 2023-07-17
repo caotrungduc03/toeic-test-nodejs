@@ -4,17 +4,30 @@ const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
 
 const getCourses = catchAsync(async (req, res) => {
-    const courses = await Course.find().populate(['topics', 'lessons']);
+    const courses = await Course.find()
+        .populate({
+            path: 'topics',
+            select: 'name -_id',
+        })
+        .populate({
+            path: 'lessons',
+            select: 'name -_id',
+        });
 
     res.status(200).json(response(200, 'Success', courses));
 });
 
 const getCourse = catchAsync(async (req, res) => {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate([
-        'topics',
-        'lessons',
-    ]);
+    const course = await Course.findById(courseId)
+        .populate({
+            path: 'topics',
+            select: 'name -_id',
+        })
+        .populate({
+            path: 'lessons',
+            select: 'name -_id',
+        });
 
     if (!course) {
         throw new ApiError('Course not found', 404);

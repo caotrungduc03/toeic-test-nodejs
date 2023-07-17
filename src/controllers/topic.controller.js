@@ -4,21 +4,21 @@ const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
 
 const getTopics = catchAsync(async (req, res) => {
-    const topics = await Topic.find().populate([
-        'course',
-        'cards',
-        'questionCard',
-    ]);
+    const topics = await Topic.find().populate(['course', 'cards']).populate({
+        path: 'questionCard',
+        select: 'name -_id',
+    });
     res.status(200).json(response(200, 'Success', topics));
 });
 
 const getTopic = catchAsync(async (req, res) => {
     const { topicId } = req.params;
-    const topic = await Topic.findById(topicId).populate([
-        'course',
-        'cards',
-        'questionCard',
-    ]);
+    const topic = await Topic.findById(topicId)
+        .populate(['course', 'cards'])
+        .populate({
+            path: 'questionCard',
+            select: 'name -_id',
+        });
 
     if (!topic) {
         throw new ApiError('Topic not found', 404);

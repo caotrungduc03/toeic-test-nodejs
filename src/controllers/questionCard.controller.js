@@ -5,11 +5,15 @@ const httpStatus = require('http-status');
 const response = require('../utils/response');
 
 const getQuestionCards = catchAsync(async (req, res) => {
-    const questionCards = await QuestionCard.find().populate([
-        'course',
-        'topic',
-    ]);
-
+    const questionCards = await QuestionCard.find()
+        .populate({
+            path: 'topic',
+            select: 'name -_id',
+        })
+        .populate({
+            path: 'course',
+            select: 'name -_id',
+        });
     res.status(httpStatus.OK).json(
         response(httpStatus.OK, 'Success', questionCards),
     );
@@ -18,10 +22,15 @@ const getQuestionCards = catchAsync(async (req, res) => {
 const getQuestionCard = catchAsync(async (req, res) => {
     const { questionCardId } = req.params;
 
-    const questionCard = await QuestionCard.findById(questionCardId).populate([
-        'course',
-        'topic',
-    ]);
+    const questionCard = await QuestionCard.findById(questionCardId)
+        .populate({
+            path: 'topic',
+            select: 'name -_id',
+        })
+        .populate({
+            path: 'course',
+            select: 'name -_id',
+        });
     if (!questionCard) {
         throw new ApiError('QuestionCard not found!', httpStatus.NOT_FOUND);
     }
@@ -99,7 +108,7 @@ const deleteQuestionCard = catchAsync(async (req, res) => {
 
     await Topic.findByIdAndUpdate(questionCard.topic, {
         $pull: {
-            cards: questionCardId,
+            questionCard: questionCardId,
         },
     });
 

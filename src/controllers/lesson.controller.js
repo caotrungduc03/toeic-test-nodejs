@@ -5,14 +5,20 @@ const httpStatus = require('http-status');
 const response = require('../utils/response');
 
 const getLessons = catchAsync(async (req, res) => {
-    const lessons = await Lesson.find().populate('course');
+    const lessons = await Lesson.find().populate({
+        path: 'course',
+        select: 'name -_id',
+    });
 
     res.status(httpStatus.OK).json(response(httpStatus.OK, 'Success', lessons));
 });
 
 const getLesson = catchAsync(async (req, res) => {
     const { lessonId } = req.params;
-    const lesson = await Lesson.findById(lessonId).populate('course');
+    const lesson = await Lesson.findById(lessonId).populate({
+        path: 'course',
+        select: 'name -_id',
+    });
 
     if (!lesson) {
         throw new ApiError('Lesson not found!', httpStatus.NOT_FOUND);
@@ -85,7 +91,7 @@ const deleteLesson = catchAsync(async (req, res) => {
 
     await Course.findByIdAndUpdate(lesson.course, {
         $pull: {
-            cards: lessonId,
+            lessons: lessonId,
         },
     });
 
