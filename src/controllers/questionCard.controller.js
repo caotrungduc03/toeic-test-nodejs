@@ -8,11 +8,11 @@ const getQuestionCards = catchAsync(async (req, res) => {
     const questionCards = await QuestionCard.find()
         .populate({
             path: 'topic',
-            select: 'name -_id',
+            select: 'name',
         })
         .populate({
             path: 'course',
-            select: 'name -_id',
+            select: 'name',
         });
     res.status(httpStatus.OK).json(
         response(httpStatus.OK, 'Success', questionCards),
@@ -25,11 +25,11 @@ const getQuestionCard = catchAsync(async (req, res) => {
     const questionCard = await QuestionCard.findById(questionCardId)
         .populate({
             path: 'topic',
-            select: 'name -_id',
+            select: 'name',
         })
         .populate({
             path: 'course',
-            select: 'name -_id',
+            select: 'name',
         });
     if (!questionCard) {
         throw new ApiError('QuestionCard not found!', httpStatus.NOT_FOUND);
@@ -42,11 +42,11 @@ const getQuestionCard = catchAsync(async (req, res) => {
 
 const createQuestionCard = catchAsync(async (req, res) => {
     const newQuestionCard = req.body;
-    const { question, answer, topicName } = newQuestionCard;
+    const { children, topicName } = newQuestionCard;
 
-    if (!question || !answer || !topicName) {
+    if (!children.length || !topicName) {
         throw new ApiError(
-            'question, answer or topic name is required!',
+            'Question, answer or topic name is required!',
             httpStatus.BAD_REQUEST,
         );
     }
@@ -65,7 +65,7 @@ const createQuestionCard = catchAsync(async (req, res) => {
         course: topic.course,
     });
 
-    topic.questionCard.push(questionCard._id);
+    topic.cards.push(questionCard._id);
     await topic.save();
 
     res.status(httpStatus.CREATED).json(
@@ -108,7 +108,7 @@ const deleteQuestionCard = catchAsync(async (req, res) => {
 
     await Topic.findByIdAndUpdate(questionCard.topic, {
         $pull: {
-            questionCard: questionCardId,
+            cards: questionCardId,
         },
     });
 

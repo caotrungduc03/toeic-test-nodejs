@@ -14,16 +14,15 @@ const topicSchema = new Schema(
             ref: 'Course',
             required: true,
         },
+        onModel: {
+            type: String,
+            required: true,
+            enum: ['FlashCard', 'QuestionCard'],
+        },
         cards: [
             {
                 type: Schema.Types.ObjectId,
-                ref: 'FlashCard',
-            },
-        ],
-        questionCard: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'QuestionCard',
+                refPath: 'onModel',
             },
         ],
     },

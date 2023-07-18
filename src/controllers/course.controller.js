@@ -1,4 +1,4 @@
-const { Course, Topic, FlashCard } = require('../models');
+const { Course, Topic, FlashCard, Lesson, QuestionCard } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
@@ -7,11 +7,11 @@ const getCourses = catchAsync(async (req, res) => {
     const courses = await Course.find()
         .populate({
             path: 'topics',
-            select: 'name -_id',
+            select: 'name',
         })
         .populate({
             path: 'lessons',
-            select: 'name -_id',
+            select: 'name',
         });
 
     res.status(200).json(response(200, 'Success', courses));
@@ -22,11 +22,11 @@ const getCourse = catchAsync(async (req, res) => {
     const course = await Course.findById(courseId)
         .populate({
             path: 'topics',
-            select: 'name -_id',
+            select: 'name',
         })
         .populate({
             path: 'lessons',
-            select: 'name -_id',
+            select: 'name',
         });
 
     if (!course) {
@@ -82,6 +82,12 @@ const deleteCourse = catchAsync(async (req, res) => {
             course: deletedCourse._id,
         }),
         FlashCard.deleteMany({
+            course: deletedCourse._id,
+        }),
+        Lesson.deleteMany({
+            course: deletedCourse._id,
+        }),
+        QuestionCard.deleteMany({
             course: deletedCourse._id,
         }),
     ]);

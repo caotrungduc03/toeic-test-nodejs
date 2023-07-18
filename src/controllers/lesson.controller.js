@@ -7,7 +7,7 @@ const response = require('../utils/response');
 const getLessons = catchAsync(async (req, res) => {
     const lessons = await Lesson.find().populate({
         path: 'course',
-        select: 'name -_id',
+        select: 'name',
     });
 
     res.status(httpStatus.OK).json(response(httpStatus.OK, 'Success', lessons));
@@ -17,7 +17,7 @@ const getLesson = catchAsync(async (req, res) => {
     const { lessonId } = req.params;
     const lesson = await Lesson.findById(lessonId).populate({
         path: 'course',
-        select: 'name -_id',
+        select: 'name',
     });
 
     if (!lesson) {

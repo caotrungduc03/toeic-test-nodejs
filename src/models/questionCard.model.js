@@ -5,38 +5,38 @@ const questionCardSchema = new Schema({
     paragraphs: {
         type: String,
     },
-    question: [
+    children: [
         {
-            hint: {
-                type: String,
+            question: {
+                hint: {
+                    type: String,
+                },
+                image: {
+                    type: String,
+                    default: null,
+                },
+                sound: {
+                    type: String,
+                    default: null,
+                },
+                texts: {
+                    type: String,
+                    required: true,
+                    trim: true,
+                },
             },
-            image: {
-                type: String,
-                default: null,
-            },
-            sound: {
-                type: String,
-                default: null,
-            },
-            texts: {
-                type: String,
-                required: true,
-                trim: true,
-            },
-        },
-    ],
-    answer: [
-        {
-            correct: {
-                type: String,
-                required: true,
-            },
-            choices: [
-                {
+            answer: {
+                correct: {
                     type: String,
                     required: true,
                 },
-            ],
+                choices: [
+                    {
+                        type: String,
+                        required: true,
+                    },
+                ],
+            },
         },
     ],
     orderIndex: {
