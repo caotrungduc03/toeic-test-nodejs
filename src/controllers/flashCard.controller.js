@@ -5,6 +5,7 @@ const response = require('../utils/response');
 
 const getFlashCards = catchAsync(async (req, res) => {
     const flashCards = await FlashCard.find().populate(['course', 'topic']);
+
     res.status(200).json(response(200, 'Success', flashCards));
 });
 
@@ -36,6 +37,7 @@ const createFlashCard = catchAsync(async (req, res) => {
     }
 
     const topic = await Topic.findOne({ name: topicName });
+
     if (!topic) {
         throw new ApiError('Topic not found', 404);
     }

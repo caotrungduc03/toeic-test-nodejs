@@ -1,17 +1,33 @@
-const { Course, Topic, FlashCard } = require('../models');
+const { Course, Topic, FlashCard, Lesson, QuestionCard } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
 
 const getCourses = catchAsync(async (req, res) => {
-    const courses = await Course.find().populate('topics');
+    const courses = await Course.find()
+        .populate({
+            path: 'topics',
+            select: 'name',
+        })
+        .populate({
+            path: 'lessons',
+            select: 'name',
+        });
 
     res.status(200).json(response(200, 'Success', courses));
 });
 
 const getCourse = catchAsync(async (req, res) => {
     const { courseId } = req.params;
-    const course = await Course.findById(courseId).populate('topics');
+    const course = await Course.findById(courseId)
+        .populate({
+            path: 'topics',
+            select: 'name',
+        })
+        .populate({
+            path: 'lessons',
+            select: 'name',
+        });
 
     if (!course) {
         throw new ApiError('Course not found', 404);
@@ -66,6 +82,12 @@ const deleteCourse = catchAsync(async (req, res) => {
             course: deletedCourse._id,
         }),
         FlashCard.deleteMany({
+            course: deletedCourse._id,
+        }),
+        Lesson.deleteMany({
+            course: deletedCourse._id,
+        }),
+        QuestionCard.deleteMany({
             course: deletedCourse._id,
         }),
     ]);
