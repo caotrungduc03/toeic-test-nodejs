@@ -12,13 +12,6 @@ const getTopics = catchAsync(async (req, res) => {
         .populate({
             path: 'cards',
             select: 'name',
-            // .populate({
-            //     path: 'cards',
-            //     select: 'name',
-            //     populate: {
-            //         path: 'questionCard',
-            //         select: 'name',
-            //     }
         });
     res.status(200).json(response(200, 'Success', topics));
 });
@@ -39,34 +32,40 @@ const getTopic = catchAsync(async (req, res) => {
 
 const createTopic = catchAsync(async (req, res) => {
     const rawTopic = req.body;
-    const { topicName, courseName } = rawTopic;
+    const { topicName, courseName, onModel } = rawTopic;
 
-    if (!topicName || !courseName) {
-        throw new ApiError('Topic name and course name are required', 400);
+    if (!topicName || !courseName || !onModel) {
+        throw new ApiError(
+            'Topic name, course name and on model are required',
+            400,
+        );
     }
 
-    const isExists = await Topic.exists({ name: topicName });
-    if (isExists) {
-        throw new ApiError('Topic is already exists', 400);
-    }
+    const [topic, course] = await Promise.all([
+        Topic.findOne({ name: topicName }).select(['_id', 'course']),
+        Course.findOne({ name: courseName }).select(['_id', 'topics']),
+    ]);
 
-    const course = await Course.findOne({ name: courseName });
     if (!course) {
         throw new ApiError('Course not found', 404);
     }
 
+    if (course._id.equals(topic?.course._id)) {
+        throw new ApiError('Topic is already exists', 400);
+    }
+
     delete rawTopic.courseName;
 
-    const topic = await Topic.create({
+    const newTopic = await Topic.create({
         ...rawTopic,
         name: topicName,
         course: course._id,
     });
 
-    course.topics.push(topic._id);
+    course.topics.push(newTopic._id);
     await course.save();
 
-    res.status(201).json(response(201, 'Created', topic));
+    res.status(201).json(response(201, 'Created', newTopic));
 });
 
 const updateTopic = catchAsync(async (req, res) => {
