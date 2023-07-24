@@ -25,6 +25,9 @@ const topicSchema = new Schema(
                 refPath: 'onModel',
             },
         ],
+        orderIndex: {
+            type: Number,
+        },
     },
     {
         timestamps: true,

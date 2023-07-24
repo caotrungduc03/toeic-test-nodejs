@@ -6,10 +6,17 @@ const { User } = require('../models');
 
 const register = catchAsync(async (req, res) => {
     const { avatar, name, email } = req.body;
-    let { password } = req.body;
+    let { password, confirmPassword } = req.body;
 
-    if (!name || !email || !password) {
-        throw new ApiError('Name, email and password are required', 400);
+    if (!name || !email || !password || !confirmPassword) {
+        throw new ApiError(
+            'Name, email, password, and confirm password are required',
+            400,
+        );
+    }
+
+    if (password !== confirmPassword) {
+        throw new ApiError('Password and confirm password do not match', 400);
     }
 
     const isUserExists = await User.exists({ email });
@@ -17,9 +24,16 @@ const register = catchAsync(async (req, res) => {
         throw new ApiError('User is already exists', 400);
     }
 
-    const user = await User.create({ avatar, name, email, password });
+    const user = await User.create({
+        avatar,
+        name,
+        email,
+        password,
+        confirmPassword,
+    });
 
     user.password = undefined;
+    user.confirmPassword = undefined;
 
     res.status(201).json({
         user,

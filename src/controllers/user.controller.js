@@ -24,10 +24,17 @@ const getUser = catchAsync(async (req, res) => {
 
 const createUser = catchAsync(async (req, res) => {
     const newUser = req.body;
-    const { name, email, password } = newUser;
+    const { name, email, password, confirmPassword } = newUser;
 
-    if (!name || !email || !password) {
-        throw new ApiError('Name, email and password are required', 400);
+    if (!name || !email || !password || !confirmPassword) {
+        throw new ApiError(
+            'Name, email, password and confirm password are required',
+            400,
+        );
+    }
+
+    if (password !== confirmPassword) {
+        throw new ApiError('Password and confirm password do not match', 400);
     }
 
     const isUserExists = await User.exists({ email });
@@ -38,6 +45,7 @@ const createUser = catchAsync(async (req, res) => {
     const user = await User.create(newUser);
 
     user.password = undefined;
+    user.confirmPassword = undefined;
 
     res.status(201).json({
         user,
@@ -49,6 +57,7 @@ const updateUser = catchAsync(async (req, res) => {
     const userRaw = req.body;
     const updatedUser = await User.findByIdAndUpdate(userId, userRaw, {
         new: true,
+        runValidators: true,
     });
 
     if (!updatedUser) {

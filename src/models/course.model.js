@@ -26,6 +26,9 @@ const courseSchema = new Schema(
                 ref: 'Topic',
             },
         ],
+        orderIndex: {
+            type: Number,
+        },
     },
     {
         timestamps: true,

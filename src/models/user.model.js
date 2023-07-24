@@ -25,6 +25,12 @@ const userSchema = new Schema(
             trim: true,
             select: false,
         },
+        confirmPassword: {
+            type: String,
+            required: true,
+            trim: true,
+            select: false,
+        },
         role: {
             type: String,
             enum: ['user', 'admin'],
@@ -40,8 +46,9 @@ userSchema.pre('save', async function (next) {
     const user = this;
 
     try {
-        if (user.isModified('password')) {
+        if (user.isModified('password', 'confirmPassword')) {
             user.password = await bcrypt.hash(user.password, 7);
+            user.confirmPassword = await bcrypt.hash(user.confirmPassword, 7);
         }
 
         next();
