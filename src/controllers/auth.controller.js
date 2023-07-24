@@ -3,14 +3,14 @@ const jwt = require('jsonwebtoken');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { User } = require('../models');
+const response = require('../utils/response');
 
 const register = catchAsync(async (req, res) => {
-    const { avatar, name, email } = req.body;
-    let { password, confirmPassword } = req.body;
+    const { name, email, password, confirmPassword } = req.body;
 
     if (!name || !email || !password || !confirmPassword) {
         throw new ApiError(
-            'Name, email, password, and confirm password are required',
+            'Name, email, password and confirm password are required',
             400,
         );
     }
@@ -25,19 +25,14 @@ const register = catchAsync(async (req, res) => {
     }
 
     const user = await User.create({
-        avatar,
         name,
         email,
         password,
-        confirmPassword,
     });
 
     user.password = undefined;
-    user.confirmPassword = undefined;
 
-    res.status(201).json({
-        user,
-    });
+    res.status(201).json(response(201, 'Created', user));
 });
 
 const login = catchAsync(async (req, res) => {
@@ -63,9 +58,7 @@ const login = catchAsync(async (req, res) => {
         },
     );
 
-    res.status(200).json({
-        accessToken,
-    });
+    res.status(200).json(response(200, 'Success', accessToken));
 });
 
 module.exports = {
