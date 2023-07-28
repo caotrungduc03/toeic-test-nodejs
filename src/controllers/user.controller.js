@@ -1,12 +1,11 @@
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { User } = require('../models');
+const response = require('../utils/response');
 
 const getUsers = catchAsync(async (req, res) => {
     const users = await User.find();
-    res.status(200).json({
-        users,
-    });
+    res.status(200).json(response(200, 'Success', users));
 });
 
 const getUser = catchAsync(async (req, res) => {
@@ -17,9 +16,7 @@ const getUser = catchAsync(async (req, res) => {
         throw new ApiError('User not found', 404);
     }
 
-    res.status(200).json({
-        user,
-    });
+    res.status(200).json(response(200, 'Success', user));
 });
 
 const createUser = catchAsync(async (req, res) => {
@@ -45,11 +42,8 @@ const createUser = catchAsync(async (req, res) => {
     const user = await User.create(newUser);
 
     user.password = undefined;
-    user.confirmPassword = undefined;
 
-    res.status(201).json({
-        user,
-    });
+    res.status(201).json(response(201, 'Created', user));
 });
 
 const updateUser = catchAsync(async (req, res) => {
@@ -64,9 +58,7 @@ const updateUser = catchAsync(async (req, res) => {
         throw new ApiError('User not found', 404);
     }
 
-    res.status(200).json({
-        updatedUser,
-    });
+    res.status(200).json(response(200, 'Updated', updatedUser));
 });
 
 const deleteUser = catchAsync(async (req, res) => {
@@ -77,7 +69,7 @@ const deleteUser = catchAsync(async (req, res) => {
         throw new ApiError('User not found', 404);
     }
 
-    res.status(204).json();
+    res.status(200).json(response(200, 'Deleted', deletedUser));
 });
 
 module.exports = {

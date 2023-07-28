@@ -26,12 +26,6 @@ const userSchema = new Schema(
             trim: true,
             select: false,
         },
-        confirmPassword: {
-            type: String,
-            required: true,
-            trim: true,
-            select: false,
-        },
         passwordChangeAt: {
             type: String,
         },
@@ -58,9 +52,6 @@ userSchema.pre('save', async function (next) {
     try {
         if (user.isModified('password')) {
             user.password = await bcrypt.hash(user.password, 7);
-        }
-        if (user.isModified('confirmPassword')) {
-            user.confirmPassword = await bcrypt.hash(user.confirmPassword, 7);
         }
         next();
     } catch (error) {
