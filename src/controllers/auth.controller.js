@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { User } = require('../models');
+const httpStatus = require('http-status');
+const sendMail = require('../utils/sendMail');
+const response = require('../utils/response');
+const crypto = require('crypto');
 
 const register = catchAsync(async (req, res) => {
     const { avatar, name, email } = req.body;
@@ -44,6 +48,7 @@ const login = catchAsync(async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email }).select('+password');
+
     if (!user) {
         throw new ApiError('Email or password is incorrect', 400);
     }
@@ -68,7 +73,64 @@ const login = catchAsync(async (req, res) => {
     });
 });
 
+const forgotPassword = catchAsync(async (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+        throw ApiError('Missing email', httpStatus.BAD_REQUEST);
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) throw new ApiError('User not found', httpStatus.NOT_FOUND);
+
+    const resetToken = user.createPasswordChangedToken();
+
+    await user.save();
+
+    const html = `Please click the link below to change your password, this link is valid for 15 minutes. <a href=${process.env.URL_SERVER}/auth/reset-password/${resetToken}>Click here</a>`;
+
+    const rs = await sendMail(email, html);
+    return res
+        .status(httpStatus.OK)
+        .json(response(httpStatus.OK, 'Success', rs));
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+    const { password, token, confirmPassword } = req.body;
+
+    if (!password || !token || !confirmPassword) {
+        throw new ApiError('Missing inputs', httpStatus.NOT_FOUND);
+    }
+
+    const passwordResetToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+
+    const user = await User.findOne({
+        passwordResetToken,
+        passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) throw new ApiError('Invalid reset token', httpStatus.NOT_FOUND);
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordChangeAt = Date.now();
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    user.password = undefined;
+    user.confirmPassword = undefined;
+
+    return res
+        .status(httpStatus.OK)
+        .json(response(httpStatus.OK, 'Updated password', user));
+});
+
 module.exports = {
     register,
     login,
+    forgotPassword,
+    resetPassword,
 };
