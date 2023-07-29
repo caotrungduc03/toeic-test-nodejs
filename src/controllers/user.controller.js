@@ -41,6 +41,8 @@ const createUser = catchAsync(async (req, res) => {
 
     const user = await User.create(newUser);
 
+    await Progress.create({ userId: user._id });
+
     user.password = undefined;
 
     res.status(201).json(response(201, 'Created', user));

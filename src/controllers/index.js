@@ -6,4 +6,5 @@ module.exports = {
     courseController: require('./course.controller'),
     topicController: require('./topic.controller'),
     flashCardController: require('./flashCard.controller'),
+    progressController: require('./progress.controller'),
 };
