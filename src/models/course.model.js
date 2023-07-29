@@ -11,7 +11,7 @@ const courseSchema = new Schema(
         },
         group: {
             type: String,
-            enum: ['Practice test', 'Vocabulary', 'Grammar'],
+            enum: ['practice-test', 'vocabulary', 'grammar'],
             required: true,
         },
         lessons: [

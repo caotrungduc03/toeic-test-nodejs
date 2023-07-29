@@ -1,12 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const httpStatus = require('http-status');
+const crypto = require('crypto');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
-const { User } = require('../models');
-const httpStatus = require('http-status');
 const sendMail = require('../utils/sendMail');
+const { User, Progress } = require('../models');
 const response = require('../utils/response');
-const crypto = require('crypto');
 
 const register = catchAsync(async (req, res) => {
     const { name, email, password, confirmPassword } = req.body;
@@ -32,6 +32,8 @@ const register = catchAsync(async (req, res) => {
         email,
         password,
     });
+
+    await Progress.create({ userId: user._id });
 
     user.password = undefined;
 
