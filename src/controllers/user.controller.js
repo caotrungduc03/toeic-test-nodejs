@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
-const { User } = require('../models');
+const { User, Progress } = require('../models');
 const response = require('../utils/response');
 
 const getUsers = catchAsync(async (req, res) => {
@@ -70,6 +70,8 @@ const deleteUser = catchAsync(async (req, res) => {
     if (!deletedUser) {
         throw new ApiError('User not found', 404);
     }
+
+    await Progress.deleteOne({ userId });
 
     res.status(200).json(response(200, 'Deleted', deletedUser));
 });

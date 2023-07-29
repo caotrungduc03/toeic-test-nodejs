@@ -32,10 +32,7 @@ const updateProgressLesson = catchAsync(async (req, res) => {
         throw new ApiError('LessonId are required', 400);
     }
 
-    const lesson = await Lesson.findById(lessonId).populate('course', [
-        '_id',
-        'group',
-    ]);
+    const lesson = await Lesson.findById(lessonId).populate('course', 'group');
 
     if (!lesson) {
         throw new ApiError('Lesson not found', 404);
@@ -48,7 +45,7 @@ const updateProgressLesson = catchAsync(async (req, res) => {
     }
 
     const courseIndex = progress.courses.findIndex((course) =>
-        course.courseId.equals(lesson.course),
+        course.courseId.equals(lesson.course._id),
     );
 
     if (courseIndex === -1) {

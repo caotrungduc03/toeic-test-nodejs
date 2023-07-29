@@ -4,14 +4,34 @@ const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
 
 const getCourses = catchAsync(async (req, res) => {
-    const courses = await Course.find()
+    const { group } = req.query;
+
+    if (!group) {
+        throw new ApiError('Group query is required', 400);
+    }
+
+    const courses = await Course.find({ group })
+        .select(['-__v', '-createdAt', '-updatedAt'])
         .populate({
             path: 'topics',
             select: 'name',
+            options: {
+                sort: {
+                    orderIndex: 1,
+                },
+            },
         })
         .populate({
             path: 'lessons',
             select: 'name',
+            options: {
+                sort: {
+                    orderIndex: 1,
+                },
+            },
+        })
+        .sort({
+            orderIndex: 1,
         });
 
     res.status(200).json(response(200, 'Success', courses));

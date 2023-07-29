@@ -15,10 +15,12 @@ const getLessons = catchAsync(async (req, res) => {
 
 const getLesson = catchAsync(async (req, res) => {
     const { lessonId } = req.params;
-    const lesson = await Lesson.findById(lessonId).populate({
-        path: 'course',
-        select: 'name',
-    });
+    const lesson = await Lesson.findById(lessonId).select([
+        '-orderIndex',
+        '-createdAt',
+        '-updatedAt',
+        '-__v',
+    ]);
 
     if (!lesson) {
         throw new ApiError('Lesson not found!', httpStatus.NOT_FOUND);
