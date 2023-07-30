@@ -9,11 +9,12 @@ authRouter.route('/register').post(authController.register);
 
 authRouter.route('/login').post(authController.login);
 
-authRouter.route('/forgotPassword').get(authController.forgotPassword);
+authRouter.route('/forgot-password').post(authController.forgotPassword);
 
-authRouter.route('/resetPassword').put(authController.resetPassword);
+authRouter.route('/reset-password').post(authController.resetPassword);
 
 authRouter.use(authMiddleware);
+authRouter.route('/get-me').get(authController.getMe);
 authRouter.use(roleMiddleware(['user', 'admin']));
 
 authRouter
