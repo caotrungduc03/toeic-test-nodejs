@@ -1,12 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const httpStatus = require('http-status');
-const crypto = require('crypto');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
+const { User } = require('../models');
+const httpStatus = require('http-status');
 const sendMail = require('../utils/sendMail');
-const { User, Progress } = require('../models');
 const response = require('../utils/response');
+const crypto = require('crypto');
 
 const register = catchAsync(async (req, res) => {
     const { name, email, password, confirmPassword } = req.body;
@@ -32,8 +32,6 @@ const register = catchAsync(async (req, res) => {
         email,
         password,
     });
-
-    await Progress.create({ userId: user._id });
 
     user.password = undefined;
 
@@ -68,9 +66,10 @@ const login = catchAsync(async (req, res) => {
 });
 
 const forgotPassword = catchAsync(async (req, res) => {
-    const { email } = req.query;
+    const { email } = req.body;
+
     if (!email) {
-        throw ApiError('Missing email', httpStatus.BAD_REQUEST);
+        throw new ApiError('Missing email', httpStatus.BAD_REQUEST);
     }
 
     const user = await User.findOne({ email });
@@ -123,9 +122,17 @@ const resetPassword = catchAsync(async (req, res) => {
         .json(response(httpStatus.OK, 'Updated password', user));
 });
 
+const getMe = catchAsync(async (req, res) => {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    res.status(httpStatus.OK).json(response(httpStatus.OK, 'Success', user));
+});
+
 module.exports = {
     register,
     login,
     forgotPassword,
     resetPassword,
+    getMe,
 };
