@@ -35,9 +35,6 @@ const flashCardSchema = new Schema(
             ref: 'Course',
             required: true,
         },
-        orderIndex: {
-            type: Number,
-        },
     },
     {
         timestamps: true,
