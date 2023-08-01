@@ -7,4 +7,5 @@ module.exports = {
     FlashCard: require('./flashCard.model'),
     CourseStudy: require('./courseStudy.model'),
     CardStudy: require('./cardStudy.model'),
+    CalendarStudy: require('./calendarStudy.model'),
 };
