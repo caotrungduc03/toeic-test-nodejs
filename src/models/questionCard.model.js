@@ -22,7 +22,6 @@ const questionCardSchema = new Schema(
                     },
                     texts: {
                         type: String,
-                        required: true,
                         trim: true,
                     },
                 },
