@@ -1,30 +1,44 @@
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const response = require('../utils/response');
-const { Progress, Lesson } = require('../models');
+const {
+    CardStudy,
+    Lesson,
+    CourseStudy,
+    QuestionCard,
+    FlashCard,
+} = require('../models');
 
 const getProgressCourses = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { group } = req.query;
 
-    if (!['practice-test', 'vocabulary', 'grammar'].includes(group)) {
-        throw new ApiError('Group is required', 400);
+    if (!['practice-test', 'vocabulary', 'grammar', 'test'].includes(group)) {
+        throw new ApiError('Group query is required', 400);
     }
 
-    const progress = await Progress.findOne({ userId: _id });
+    const coursesStudy = await CourseStudy.find({ userId: _id, group });
 
-    if (!progress) {
-        throw new ApiError('Progress not found', 404);
-    }
-
-    const progressCourses = progress.courses.filter(
-        (course) => course.group === group,
-    );
-
-    res.status(200).json(response(200, 'Success', progressCourses));
+    res.status(200).json(response(200, 'Success', coursesStudy));
 });
 
-const updateProgressLesson = catchAsync(async (req, res) => {
+const getProgressCards = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { topicId } = req.query;
+
+    if (!topicId) {
+        throw new ApiError('TopicId query is required', 400);
+    }
+
+    const cards = await CardStudy.find({ userId: _id, topicId }).select([
+        'cardId',
+        'status',
+    ]);
+
+    res.status(200).json(response(200, 'Success', cards));
+});
+
+const updateLessonStatus = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { lessonId } = req.query;
 
@@ -38,40 +52,131 @@ const updateProgressLesson = catchAsync(async (req, res) => {
         throw new ApiError('Lesson not found', 404);
     }
 
-    let progress = await Progress.findOne({ userId: _id });
+    let courseStudy = await CourseStudy.findOne({
+        userId: _id,
+        courseId: lesson.course._id,
+    });
 
-    if (!progress) {
-        progress = new Progress({ userId: _id, courses: [] });
-    }
-
-    const courseIndex = progress.courses.findIndex((course) =>
-        course.courseId.equals(lesson.course._id),
-    );
-
-    if (courseIndex === -1) {
-        progress.courses.push({
+    if (!courseStudy) {
+        courseStudy = new CourseStudy({
+            userId: _id,
             courseId: lesson.course._id,
             group: lesson.course.group,
-            topics: [],
-            lessons: [lessonId],
         });
-    } else {
-        const lessonIndex =
-            progress.courses[courseIndex].lessons.indexOf(lessonId);
+    }
 
-        if (lessonIndex === -1) {
-            progress.courses[courseIndex].lessons.push(lessonId);
+    const lessonIndex = courseStudy.lessons.indexOf(lessonId);
+
+    if (lessonIndex === -1) {
+        courseStudy.lessons.push(lessonId);
+    }
+
+    await courseStudy.save();
+
+    res.status(200).json(response(200, 'Updated', lesson));
+});
+
+const updateCardStatus = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { cardId, status, answer } = req.query;
+
+    if (!cardId || !status || !answer) {
+        throw new ApiError('CardId, status and answer queries are required');
+    }
+
+    const [fCard, qCard] = await Promise.all([
+        FlashCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .select(['-createdAt', '-updatedAt', '-__v']),
+        QuestionCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .select(['-createdAt', '-updatedAt', '-__v']),
+        ,
+    ]);
+
+    const card = fCard ?? qCard;
+    const type = fCard ? 'flash-card' : 'question-card';
+
+    if (!card) {
+        throw new ApiError('Card not found', 404);
+    }
+
+    let cardStudy = await CardStudy.findOne({ userId: _id, cardId });
+
+    if (!cardStudy) {
+        cardStudy = new CardStudy({
+            userId: _id,
+            cardId,
+            topicId: card.topic,
+            type,
+        });
+    }
+
+    if (answer === 'true') {
+        if (status !== '2') {
+            cardStudy.status = '2';
+
+            let courseStudy = await CourseStudy.findOne({
+                userId: _id,
+                courseId: card.course._id,
+            });
+
+            if (!courseStudy) {
+                courseStudy = new CourseStudy({
+                    userId: _id,
+                    courseId: card.course._id,
+                    group: card.course.group,
+                });
+            }
+
+            const topicIndex = courseStudy.topics.findIndex((topic) =>
+                topic.topicId.equals(card.topic._id),
+            );
+
+            if (topicIndex === -1) {
+                courseStudy.topics.push({
+                    topicId: card.topic._id,
+                    progress: 1,
+                });
+            } else {
+                courseStudy.topics[topicIndex].progress++;
+            }
+
+            await courseStudy.save();
+        }
+    } else {
+        if (status !== '1') {
+            cardStudy.status = '1';
+
+            if (type === 'question-card' && card.course.group !== 'test') {
+                cardStudy.review = '1';
+            }
+        }
+
+        if (status === '2') {
+            const courseStudy = await CourseStudy.findOne({
+                userId: _id,
+                courseId: card.course._id,
+            });
+
+            const topicIndex = courseStudy.topics.findIndex((topic) =>
+                topic.topicId.equals(card.topic._id),
+            );
+
+            courseStudy.topics[topicIndex].progress--;
+
+            await courseStudy.save();
         }
     }
 
-    await progress.save();
+    await cardStudy.save();
 
-    progress.__v = undefined;
-
-    res.json(response(200, 'Updated', progress));
+    res.status(200).json(response(200, 'Updated', card));
 });
 
 module.exports = {
     getProgressCourses,
-    updateProgressLesson,
+    getProgressCards,
+    updateLessonStatus,
+    updateCardStatus,
 };
