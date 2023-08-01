@@ -7,6 +7,7 @@ const {
     CourseStudy,
     QuestionCard,
     FlashCard,
+    CalendarStudy,
 } = require('../models');
 
 const getProgressCourses = catchAsync(async (req, res) => {
@@ -22,7 +23,7 @@ const getProgressCourses = catchAsync(async (req, res) => {
     res.status(200).json(response(200, 'Success', coursesStudy));
 });
 
-const getProgressCards = catchAsync(async (req, res) => {
+const getProgressCardsStudy = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { topicId } = req.query;
 
@@ -34,6 +35,22 @@ const getProgressCards = catchAsync(async (req, res) => {
         'cardId',
         'status',
     ]);
+
+    res.status(200).json(response(200, 'Success', cards));
+});
+
+const getProgressCardsReview = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { review } = req.query;
+    if (!review) {
+        throw new ApiError('Type and review queries are required', 400);
+    }
+
+    const cards = await CardStudy.find({
+        userId: _id,
+        type: 'question-card',
+        review,
+    });
 
     res.status(200).json(response(200, 'Success', cards));
 });
@@ -73,15 +90,18 @@ const updateLessonStatus = catchAsync(async (req, res) => {
 
     await courseStudy.save();
 
-    res.status(200).json(response(200, 'Updated', lesson));
+    res.status(200).json(response(200, 'Updated', courseStudy));
 });
 
-const updateCardStatus = catchAsync(async (req, res) => {
+const updateCardStudyStatus = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { cardId, status, answer } = req.query;
 
     if (!cardId || !status || !answer) {
-        throw new ApiError('CardId, status and answer queries are required');
+        throw new ApiError(
+            'CardId, status and answer queries are required',
+            400,
+        );
     }
 
     const [fCard, qCard] = await Promise.all([
@@ -145,12 +165,12 @@ const updateCardStatus = catchAsync(async (req, res) => {
             await courseStudy.save();
         }
     } else {
+        if (type === 'question-card' && card.course.group !== 'test') {
+            cardStudy.review = '1';
+        }
+
         if (status !== '1') {
             cardStudy.status = '1';
-
-            if (type === 'question-card' && card.course.group !== 'test') {
-                cardStudy.review = '1';
-            }
         }
 
         if (status === '2') {
@@ -171,12 +191,114 @@ const updateCardStatus = catchAsync(async (req, res) => {
 
     await cardStudy.save();
 
-    res.status(200).json(response(200, 'Updated', card));
+    res.status(200).json(response(200, 'Updated', cardStudy));
+});
+
+const updateCardStudyReview = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { cardId, status, answer } = req.query;
+
+    if (!cardId || !status || !answer) {
+        throw new ApiError(
+            'CardId, status and answer queries are required',
+            400,
+        );
+    }
+
+    const card = await QuestionCard.findById(cardId);
+    if (!card) {
+        throw new ApiError('Card not found');
+    }
+
+    const cardStudy = await CardStudy.findOne({ userId: _id, cardId });
+
+    if (!cardStudy) {
+        throw new ApiError('Card not study');
+    }
+
+    if (answer === 'true') {
+        if (status === '1') {
+            cardStudy.review = '2';
+        } else if (status === '2') {
+            cardStudy.review = '0';
+        }
+    } else {
+        if (status === '2') {
+            cardStudy.review = '1';
+        }
+    }
+
+    await cardStudy.save();
+
+    res.status(200).json(response(200, 'Updated', cardStudy));
+});
+
+const getCalendarStudy = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { year, month, day } = req.query;
+    if (!year || !month || !day) {
+        throw new ApiError('Year, month and day queries are required', 400);
+    }
+
+    const calendarStudy = await CalendarStudy.findOne({
+        userId: _id,
+        year,
+        month,
+        day,
+    });
+
+    res.status(200).json(response(200, 'Success', calendarStudy));
+});
+
+const updateCalendarStudy = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const { cardId } = req.query;
+    if (!cardId) {
+        throw new ApiError('CardId query is required', 400);
+    }
+
+    const date = new Date();
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    let calendarStudy = await CalendarStudy.findOne({
+        userId: _id,
+        year,
+        month,
+        day,
+    }).select(['-createdAt', '-updatedAt', '-__v']);
+
+    if (!calendarStudy) {
+        calendarStudy = new CalendarStudy({
+            userId: _id,
+            year,
+            month,
+            day,
+        });
+    }
+
+    const cardIndex = calendarStudy.cards.findIndex((card) =>
+        card.equals(cardId),
+    );
+
+    if (cardIndex === -1) {
+        calendarStudy.cards.push(cardId);
+    }
+
+    await calendarStudy.save();
+
+    res.status(200).json(response(200, 'Updated', calendarStudy));
 });
 
 module.exports = {
     getProgressCourses,
-    getProgressCards,
+    getProgressCardsStudy,
+    getProgressCardsReview,
     updateLessonStatus,
-    updateCardStatus,
+    updateCardStudyStatus,
+    updateCardStudyReview,
+    getCalendarStudy,
+    updateCalendarStudy,
 };

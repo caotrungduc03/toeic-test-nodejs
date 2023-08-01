@@ -10,10 +10,21 @@ progressRouter.use(roleMiddleware(['user', 'admin']));
 
 progressRouter.route('/courses').get(progressController.getProgressCourses);
 
-progressRouter.route('/cards').get(progressController.getProgressCards);
+progressRouter
+    .route('/cards/study')
+    .get(progressController.getProgressCardsStudy)
+    .put(progressController.updateCardStudyStatus);
+
+progressRouter
+    .route('/cards/review')
+    .get(progressController.getProgressCardsReview)
+    .put(progressController.updateCardStudyReview);
 
 progressRouter.route('/lesson').put(progressController.updateLessonStatus);
 
-progressRouter.route('/card').put(progressController.updateCardStatus);
+progressRouter
+    .route('/calendar')
+    .get(progressController.getCalendarStudy)
+    .put(progressController.updateCalendarStudy);
 
 module.exports = progressRouter;
