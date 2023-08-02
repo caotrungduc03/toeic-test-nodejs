@@ -1,6 +1,7 @@
 const express = require('express');
 const authMiddleware = require('../middlewares/auth.middleware');
 const roleMiddleware = require('../middlewares/role.middlleware');
+const uploadCloud = require('../middlewares/uploader.middleware');
 const { userController } = require('../controllers');
 
 const userRouter = express.Router();
@@ -11,7 +12,7 @@ userRouter.use(roleMiddleware(['admin']));
 userRouter
     .route('/')
     .get(userController.getUsers)
-    .post(userController.createUser);
+    .post(uploadCloud.single('avatar'), userController.createUser);
 
 userRouter
     .route('/:userId')

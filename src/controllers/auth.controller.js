@@ -7,11 +7,15 @@ const httpStatus = require('http-status');
 const sendMail = require('../utils/sendMail');
 const response = require('../utils/response');
 const crypto = require('crypto');
+const cloudinary = require('cloudinary').v2;
 
 const register = catchAsync(async (req, res) => {
-    const { name, email, password, confirmPassword } = req.body;
+    const newUser = req.body;
+    const { name, email, password, confirmPassword } = newUser;
+    const fileData = req.file;
 
     if (!name || !email || !password || !confirmPassword) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError(
             'Name, email, password and confirm password are required',
             400,
@@ -19,18 +23,26 @@ const register = catchAsync(async (req, res) => {
     }
 
     if (password !== confirmPassword) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('Password and confirm password do not match', 400);
     }
 
     const isUserExists = await User.exists({ email });
     if (isUserExists) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('User is already exists', 400);
+    }
+
+    if (fileData) {
+        const result = await cloudinary.uploader.upload(fileData?.path);
+        newUser.avatar = result.secure_url;
     }
 
     const user = await User.create({
         name,
         email,
         password,
+        avatar: newUser.avatar,
     });
 
     user.password = undefined;

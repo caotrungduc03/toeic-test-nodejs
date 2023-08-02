@@ -1,7 +1,8 @@
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
-const { User, Progress } = require('../models');
+const { User } = require('../models');
 const response = require('../utils/response');
+const cloudinary = require('cloudinary').v2;
 
 const getUsers = catchAsync(async (req, res) => {
     const users = await User.find();
@@ -22,8 +23,10 @@ const getUser = catchAsync(async (req, res) => {
 const createUser = catchAsync(async (req, res) => {
     const newUser = req.body;
     const { name, email, password, confirmPassword } = newUser;
+    const fileData = req.file;
 
     if (!name || !email || !password || !confirmPassword) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError(
             'Name, email, password and confirm password are required',
             400,
@@ -31,17 +34,22 @@ const createUser = catchAsync(async (req, res) => {
     }
 
     if (password !== confirmPassword) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('Password and confirm password do not match', 400);
     }
 
     const isUserExists = await User.exists({ email });
     if (isUserExists) {
+        if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('User is already exists', 400);
     }
 
-    const user = await User.create(newUser);
+    if (fileData) {
+        const result = await cloudinary.uploader.upload(fileData?.path);
+        newUser.avatar = result.secure_url;
+    }
 
-    await Progress.create({ userId: user._id });
+    const user = await User.create(newUser);
 
     user.password = undefined;
 
@@ -73,7 +81,7 @@ const deleteUser = catchAsync(async (req, res) => {
 
     await Progress.deleteOne({ userId });
 
-    res.status(200).json(response(200, 'Deleted', deletedUser));
+    res.status(204).json();
 });
 
 module.exports = {
