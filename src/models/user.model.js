@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const toJSON = require('../utils/toJSON');
 
 const Schema = mongoose.Schema;
 
@@ -49,6 +50,8 @@ const userSchema = new Schema(
         timestamps: true,
     },
 );
+
+userSchema.plugin(toJSON);
 
 userSchema.pre('save', async function (next) {
     const user = this;

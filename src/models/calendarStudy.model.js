@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const toJSON = require('../utils/toJSON');
 
 const Schema = mongoose.Schema;
 
@@ -9,15 +10,15 @@ const calendarStudySchema = new Schema(
             required: true,
         },
         year: {
-            type: String,
+            type: Number,
             required: true,
         },
         month: {
-            type: String,
+            type: Number,
             required: true,
         },
         day: {
-            type: String,
+            type: Number,
             required: true,
         },
         cards: [Schema.Types.ObjectId],
@@ -26,6 +27,8 @@ const calendarStudySchema = new Schema(
         timestamps: true,
     },
 );
+
+calendarStudySchema.plugin(toJSON);
 
 const CalendarStudy = mongoose.model('CalendarStudy', calendarStudySchema);
 

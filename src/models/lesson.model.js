@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const toJSON = require('../utils/toJSON');
 const Schema = mongoose.Schema;
 
 const lessonSchema = new Schema(
@@ -35,6 +36,8 @@ const lessonSchema = new Schema(
         timestamps: true,
     },
 );
+
+lessonSchema.plugin(toJSON);
 
 const Lesson = mongoose.model('Lesson', lessonSchema);
 module.exports = Lesson;

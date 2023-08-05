@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const toJSON = require('../utils/toJSON');
 
 const Schema = mongoose.Schema;
 
@@ -43,6 +44,8 @@ const flashCardSchema = new Schema(
         timestamps: true,
     },
 );
+
+flashCardSchema.plugin(toJSON);
 
 const FlashCard = mongoose.model('FlashCard', flashCardSchema);
 
