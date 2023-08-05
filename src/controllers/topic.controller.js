@@ -18,17 +18,15 @@ const getTopics = catchAsync(async (req, res) => {
 
 const getTopic = catchAsync(async (req, res) => {
     const { topicId } = req.params;
-    const topic = await Topic.findById(topicId)
-        .select(['-createdAt', '-updatedAt', '-__v'])
-        .populate({
-            path: 'cards',
-            select: ['-createdAt', '-updatedAt', '-__v'],
-            options: {
-                sort: {
-                    orderIndex: 1,
-                },
+    const topic = await Topic.findById(topicId).populate({
+        path: 'cards',
+        select: ['-createdAt', '-updatedAt', '-__v'],
+        options: {
+            sort: {
+                orderIndex: 1,
             },
-        });
+        },
+    });
 
     if (!topic) {
         throw new ApiError('Topic not found', 404);

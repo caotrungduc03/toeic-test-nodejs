@@ -11,7 +11,6 @@ const getCourses = catchAsync(async (req, res) => {
     }
 
     const courses = await Course.find({ group })
-        .select(['-__v', '-createdAt', '-updatedAt'])
         .populate({
             path: 'topics',
             select: 'name',

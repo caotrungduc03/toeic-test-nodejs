@@ -43,7 +43,7 @@ const getProgressCardsReview = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { review } = req.query;
     if (!review) {
-        throw new ApiError('Type and review queries are required', 400);
+        throw new ApiError('Review query are required', 400);
     }
 
     const cards = await CardStudy.find({
@@ -105,13 +105,8 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     const [fCard, qCard] = await Promise.all([
-        FlashCard.findOne({ _id: cardId })
-            .populate('course', 'group')
-            .select(['-createdAt', '-updatedAt', '-__v']),
-        QuestionCard.findOne({ _id: cardId })
-            .populate('course', 'group')
-            .select(['-createdAt', '-updatedAt', '-__v']),
-        ,
+        FlashCard.findOne({ _id: cardId }).populate('course', 'group'),
+        QuestionCard.findOne({ _id: cardId }).populate('course', 'group'),
     ]);
 
     const card = fCard ?? qCard;
@@ -268,7 +263,7 @@ const updateCalendarStudy = catchAsync(async (req, res) => {
         year,
         month,
         day,
-    }).select(['-createdAt', '-updatedAt', '-__v']);
+    });
 
     if (!calendarStudy) {
         calendarStudy = new CalendarStudy({
