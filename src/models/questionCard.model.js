@@ -42,20 +42,17 @@ const questionCardSchema = new Schema(
         orderIndex: {
             type: Number,
         },
-        topic: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Topic',
-                require: true,
-            },
-        ],
-        course: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Course',
-                require: true,
-            },
-        ],
+        topic: {
+            type: Schema.Types.ObjectId,
+            ref: 'Topic',
+            require: true,
+        },
+
+        course: {
+            type: Schema.Types.ObjectId,
+            ref: 'Course',
+            require: true,
+        },
     },
     {
         timestamps: true,
