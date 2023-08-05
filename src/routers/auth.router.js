@@ -6,9 +6,7 @@ const uploadCloud = require('../middlewares/uploader.middleware');
 
 const authRouter = express.Router();
 
-authRouter
-    .route('/register')
-    .post(uploadCloud.single('avatar'), authController.register);
+authRouter.route('/register').post(authController.register);
 
 authRouter.route('/login').post(authController.login);
 
@@ -20,5 +18,8 @@ authRouter.use(authMiddleware);
 authRouter.use(roleMiddleware(['user', 'admin']));
 
 authRouter.route('/me').get(authController.getMe);
+authRouter
+    .route('/profile')
+    .put(uploadCloud.single('avatar'), authController.updateProfile);
 
 module.exports = authRouter;

@@ -21,6 +21,10 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
+        birthday: {
+            type: String,
+            trim: true,
+        },
         password: {
             type: String,
             required: true,
