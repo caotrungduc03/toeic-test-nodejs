@@ -1,4 +1,4 @@
-const { FlashCard, Topic } = require('../models');
+const { FlashCard, Topic, CardStudy } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
@@ -93,13 +93,18 @@ const deleteFlashCard = catchAsync(async (req, res) => {
         throw new ApiError('Flash card not found', 404);
     }
 
-    await Topic.findByIdAndUpdate(deletedFlashCard.topic, {
-        $pull: {
-            cards: flashCardId,
-        },
-    });
+    await Promise.all([
+        Topic.findByIdAndUpdate(deletedFlashCard.topic, {
+            $pull: {
+                cards: flashCardId,
+            },
+        }),
+        CardStudy.deleteMany({
+            cardId: flashCardId,
+        }),
+    ]);
 
-    res.status(204).json();
+    res.status(200).json(response(200, 'Deleted', deletedFlashCard));
 });
 
 module.exports = {

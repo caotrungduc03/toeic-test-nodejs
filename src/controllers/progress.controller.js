@@ -123,6 +123,7 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
             userId: _id,
             cardId,
             topicId: card.topic,
+            courseId: card.course._id,
             type,
         });
     }
@@ -230,17 +231,16 @@ const updateCardStudyReview = catchAsync(async (req, res) => {
 
 const getCalendarStudy = catchAsync(async (req, res) => {
     const { _id } = req.user;
-    const { year, month, day } = req.query;
-    if (!year || !month || !day) {
-        throw new ApiError('Year, month and day queries are required', 400);
+    const { year, month } = req.query;
+    if (!year || !month) {
+        throw new ApiError('Year and month queries are required', 400);
     }
 
-    const calendarStudy = await CalendarStudy.findOne({
+    const calendarStudy = await CalendarStudy.find({
         userId: _id,
         year,
         month,
-        day,
-    });
+    }).sort({ day: 1 });
 
     res.status(200).json(response(200, 'Success', calendarStudy));
 });

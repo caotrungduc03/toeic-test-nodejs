@@ -20,7 +20,6 @@ const getTopic = catchAsync(async (req, res) => {
     const { topicId } = req.params;
     const topic = await Topic.findById(topicId).populate({
         path: 'cards',
-        select: ['-createdAt', '-updatedAt', '-__v'],
         options: {
             sort: {
                 orderIndex: 1,
@@ -31,6 +30,8 @@ const getTopic = catchAsync(async (req, res) => {
     if (!topic) {
         throw new ApiError('Topic not found', 404);
     }
+
+    topic.onModel = undefined;
 
     res.status(200).json(response(200, 'Success', topic));
 });

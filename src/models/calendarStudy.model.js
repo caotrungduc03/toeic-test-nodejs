@@ -10,15 +10,15 @@ const calendarStudySchema = new Schema(
             required: true,
         },
         year: {
-            type: String,
+            type: Number,
             required: true,
         },
         month: {
-            type: String,
+            type: Number,
             required: true,
         },
         day: {
-            type: String,
+            type: Number,
             required: true,
         },
         cards: [Schema.Types.ObjectId],

@@ -1,5 +1,5 @@
 const catchAsync = require('../utils/catchAsync');
-const { QuestionCard, Topic } = require('../models');
+const { QuestionCard, Topic, CardStudy } = require('../models');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 const response = require('../utils/response');
@@ -100,19 +100,28 @@ const updateQuestionCard = catchAsync(async (req, res) => {
 
 const deleteQuestionCard = catchAsync(async (req, res) => {
     const { questionCardId } = req.params;
-    const questionCard = await QuestionCard.findByIdAndDelete(questionCardId);
+    const deletedQuestionCard = await QuestionCard.findByIdAndDelete(
+        questionCardId,
+    );
 
     if (!questionCard) {
         throw new ApiError('QuestionCard not found', httpStatus.NOT_FOUND);
     }
 
-    await Topic.findByIdAndUpdate(questionCard.topic, {
-        $pull: {
-            cards: questionCardId,
-        },
-    });
+    await Promise.all([
+        Topic.findByIdAndUpdate(deletedQuestionCard.topic, {
+            $pull: {
+                cards: questionCardId,
+            },
+        }),
+        CardStudy.deleteMany({
+            cardId: questionCardId,
+        }),
+    ]);
 
-    res.status(httpStatus.OK).json(response(httpStatus.NO_CONTENT));
+    res.status(httpStatus.OK).json(
+        response(httpStatus.OK, 'Deleted', deletedQuestionCard),
+    );
 });
 
 module.exports = {

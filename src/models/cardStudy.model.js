@@ -17,6 +17,10 @@ const cardStudySchema = new Schema(
             type: Schema.Types.ObjectId,
             required: true,
         },
+        courseId: {
+            type: Schema.Types.ObjectId,
+            required: true,
+        },
         type: {
             type: String,
             enum: ['flash-card', 'question-card'],
