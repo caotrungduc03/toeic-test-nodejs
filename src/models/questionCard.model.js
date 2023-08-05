@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const toJSON = require('../utils/toJSON');
 const Schema = mongoose.Schema;
 
 const questionCardSchema = new Schema(
@@ -61,6 +62,8 @@ const questionCardSchema = new Schema(
         timestamps: true,
     },
 );
+
+questionCardSchema.plugin(toJSON);
 
 const QuestionCard = mongoose.model('QuestionCard', questionCardSchema);
 

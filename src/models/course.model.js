@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const toJSON = require('../utils/toJSON');
 
 const Schema = mongoose.Schema;
 
@@ -34,6 +35,8 @@ const courseSchema = new Schema(
         timestamps: true,
     },
 );
+
+courseSchema.plugin(toJSON);
 
 const Course = mongoose.model('Course', courseSchema);
 

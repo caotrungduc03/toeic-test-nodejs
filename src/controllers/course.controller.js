@@ -1,4 +1,12 @@
-const { Course, Topic, FlashCard, Lesson, QuestionCard } = require('../models');
+const {
+    Course,
+    Topic,
+    FlashCard,
+    Lesson,
+    QuestionCard,
+    CourseStudy,
+    CardStudy,
+} = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
@@ -11,7 +19,6 @@ const getCourses = catchAsync(async (req, res) => {
     }
 
     const courses = await Course.find({ group })
-        .select(['-__v', '-createdAt', '-updatedAt'])
         .populate({
             path: 'topics',
             select: 'name',
@@ -109,6 +116,12 @@ const deleteCourse = catchAsync(async (req, res) => {
         }),
         QuestionCard.deleteMany({
             course: deletedCourse._id,
+        }),
+        CourseStudy.deleteMany({
+            courseId: deletedCourse._id,
+        }),
+        CardStudy.deleteMany({
+            courseId: deletedCourse._id,
         }),
     ]);
 

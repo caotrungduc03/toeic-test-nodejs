@@ -43,7 +43,7 @@ const getProgressCardsReview = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { review } = req.query;
     if (!review) {
-        throw new ApiError('Type and review queries are required', 400);
+        throw new ApiError('Review query are required', 400);
     }
 
     const cards = await CardStudy.find({
@@ -105,13 +105,8 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     const [fCard, qCard] = await Promise.all([
-        FlashCard.findOne({ _id: cardId })
-            .populate('course', 'group')
-            .select(['-createdAt', '-updatedAt', '-__v']),
-        QuestionCard.findOne({ _id: cardId })
-            .populate('course', 'group')
-            .select(['-createdAt', '-updatedAt', '-__v']),
-        ,
+        FlashCard.findOne({ _id: cardId }).populate('course', 'group'),
+        QuestionCard.findOne({ _id: cardId }).populate('course', 'group'),
     ]);
 
     const card = fCard ?? qCard;
@@ -128,6 +123,7 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
             userId: _id,
             cardId,
             topicId: card.topic,
+            courseId: card.course._id,
             type,
         });
     }
@@ -235,17 +231,16 @@ const updateCardStudyReview = catchAsync(async (req, res) => {
 
 const getCalendarStudy = catchAsync(async (req, res) => {
     const { _id } = req.user;
-    const { year, month, day } = req.query;
-    if (!year || !month || !day) {
-        throw new ApiError('Year, month and day queries are required', 400);
+    const { year, month } = req.query;
+    if (!year || !month) {
+        throw new ApiError('Year and month queries are required', 400);
     }
 
-    const calendarStudy = await CalendarStudy.findOne({
+    const calendarStudy = await CalendarStudy.find({
         userId: _id,
         year,
         month,
-        day,
-    });
+    }).sort({ day: 1 });
 
     res.status(200).json(response(200, 'Success', calendarStudy));
 });
@@ -268,7 +263,7 @@ const updateCalendarStudy = catchAsync(async (req, res) => {
         year,
         month,
         day,
-    }).select(['-createdAt', '-updatedAt', '-__v']);
+    });
 
     if (!calendarStudy) {
         calendarStudy = new CalendarStudy({
