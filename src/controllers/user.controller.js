@@ -33,6 +33,12 @@ const createUser = catchAsync(async (req, res) => {
         );
     }
 
+    const emailRegex =
+        /^[a-zA-Z0-9_.]{6,32}@([a-zA-Z]{2,12})(\.[a-zA-Z]{2,12})+$/;
+    if (!emailRegex.test(email)) {
+        throw new ApiError('Email address is not valid', 400);
+    }
+
     if (password !== confirmPassword) {
         if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('Password and confirm password do not match', 400);
@@ -59,6 +65,13 @@ const createUser = catchAsync(async (req, res) => {
 const updateUser = catchAsync(async (req, res) => {
     const { userId } = req.params;
     const userRaw = req.body;
+
+    const emailRegex =
+        /^[a-zA-Z0-9_.]{6,32}@([a-zA-Z]{2,12})(\.[a-zA-Z]{2,12})+$/;
+    if (!emailRegex.test(userRaw.email)) {
+        throw new ApiError('Email address is not valid', 400);
+    }
+
     const updatedUser = await User.findByIdAndUpdate(userId, userRaw, {
         new: true,
         runValidators: true,
