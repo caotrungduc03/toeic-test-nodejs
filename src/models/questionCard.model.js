@@ -7,39 +7,35 @@ const questionCardSchema = new Schema(
         paragraphs: {
             type: String,
         },
-        children: [
-            {
-                question: {
-                    hint: {
-                        type: String,
-                    },
-                    image: {
-                        type: String,
-                        default: null,
-                    },
-                    sound: {
-                        type: String,
-                        default: null,
-                    },
-                    texts: {
-                        type: String,
-                        trim: true,
-                    },
-                },
-                answer: {
-                    correct: {
-                        type: String,
-                        required: true,
-                    },
-                    choices: [
-                        {
-                            type: String,
-                            required: true,
-                        },
-                    ],
-                },
+        question: {
+            hint: {
+                type: String,
             },
-        ],
+            image: {
+                type: String,
+                default: null,
+            },
+            sound: {
+                type: String,
+                default: null,
+            },
+            texts: {
+                type: String,
+                trim: true,
+            },
+        },
+        answer: {
+            correct: {
+                type: String,
+                required: true,
+            },
+            choices: [
+                {
+                    type: String,
+                    required: true,
+                },
+            ],
+        },
         orderIndex: {
             type: Number,
         },
