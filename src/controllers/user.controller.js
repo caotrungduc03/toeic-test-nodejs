@@ -39,6 +39,12 @@ const createUser = catchAsync(async (req, res) => {
         throw new ApiError('Email address is not valid', 400);
     }
 
+    const passwordRegex =
+        /^(?=.*[A-Z])(?=.*[!@#$%^&*_?])(?=.*[0-9])([a-zA-Z0-9!@#$%^&*_?]){7,}$/;
+    if (!passwordRegex.test(password)) {
+        throw new ApiError('Password is not in the correct format', 400);
+    }
+
     if (password !== confirmPassword) {
         if (fileData) cloudinary.uploader.destroy(fileData.filename);
         throw new ApiError('Password and confirm password do not match', 400);
