@@ -133,8 +133,12 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     const [fCard, qCard] = await Promise.all([
-        FlashCard.findOne({ _id: cardId }).populate('course', 'group'),
-        QuestionCard.findOne({ _id: cardId }).populate('course', 'group'),
+        FlashCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .populate('topic', 'cards'),
+        QuestionCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .populate('topic', 'cards'),
     ]);
 
     const card = fCard ?? qCard;
@@ -143,6 +147,8 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     if (!card) {
         throw new ApiError('Card not found', 404);
     }
+
+    const { cards } = card.topic;
 
     let cardStudy = await CardStudy.findOne({ userId: _id, cardId });
 
@@ -157,9 +163,9 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     if (answer === 'true') {
-        if (status !== '2') {
-            cardStudy.status = '2';
+        cardStudy.status = '2';
 
+        if (status !== '2') {
             let courseStudy = await CourseStudy.findOne({
                 userId: _id,
                 courseId: card.course._id,
@@ -180,21 +186,27 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
             if (topicIndex === -1) {
                 courseStudy.topics.push({
                     topicId: card.topic._id,
-                    progress: 1,
+                    progress: Math.round((1 / cards.length) * 100),
                 });
             } else {
-                courseStudy.topics[topicIndex].progress++;
+                let cardStudies = await CardStudy.find({
+                    userId: _id,
+                    cardId: { $in: cards },
+                    status: '2',
+                });
+
+                courseStudy.topics[topicIndex].progress = Math.round(
+                    ((cardStudies.length + 1) / cards.length) * 100,
+                );
             }
 
             await courseStudy.save();
         }
     } else {
+        cardStudy.status = '1';
+
         if (type === 'question-card' && card.course.group !== 'test') {
             cardStudy.review = '1';
-        }
-
-        if (status !== '1') {
-            cardStudy.status = '1';
         }
 
         if (status === '2') {
@@ -207,7 +219,15 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
                 topic.topicId.equals(card.topic._id),
             );
 
-            courseStudy.topics[topicIndex].progress--;
+            let cardStudies = await CardStudy.find({
+                userId: _id,
+                cardId: { $in: cards },
+                status: '2',
+            });
+
+            courseStudy.topics[topicIndex].progress = Math.round(
+                ((cardStudies.length - 1) / cards.length) * 100,
+            );
 
             await courseStudy.save();
         }
