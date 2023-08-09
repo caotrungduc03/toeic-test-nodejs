@@ -55,6 +55,26 @@ const getProgressCardsReview = catchAsync(async (req, res) => {
     res.status(200).json(response(200, 'Success', cards));
 });
 
+const getProgressCardsDaily = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const limit = 10;
+
+    const cards = await CardStudy.find({
+        userId: _id,
+        type: 'flash-card',
+    })
+        .select('-review')
+        .limit(limit);
+
+    const cardIds = cards.map((cardStudy) => cardStudy.cardId);
+
+    const newCards = await FlashCard.find({
+        _id: { $in: cardIds },
+    });
+
+    res.status(200).json(response(200, 'Success', newCards));
+});
+
 const updateLessonStatus = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { lessonId } = req.query;
@@ -296,4 +316,5 @@ module.exports = {
     updateCardStudyReview,
     getCalendarStudy,
     updateCalendarStudy,
+    getProgressCardsDaily,
 };
