@@ -20,6 +20,10 @@ progressRouter
     .get(progressController.getProgressCardsReview)
     .put(progressController.updateCardStudyReview);
 
+progressRouter
+    .route('/cards/daily')
+    .get(progressController.getProgressCardsDaily);
+
 progressRouter.route('/lesson').put(progressController.updateLessonStatus);
 
 progressRouter

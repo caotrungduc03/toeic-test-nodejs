@@ -7,6 +7,7 @@ const courseRouter = require('./course.router');
 const topicRouter = require('./topic.router');
 const flashCardRouter = require('./flashCard.router');
 const progressRouter = require('./progress.router');
+const gameRouter = require('./game.router');
 
 const router = express.Router();
 
@@ -42,6 +43,10 @@ const routes = [
     {
         path: '/progress',
         route: progressRouter,
+    },
+    {
+        path: '/game',
+        route: gameRouter,
     },
 ];
 

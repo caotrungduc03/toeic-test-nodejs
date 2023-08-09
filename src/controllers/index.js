@@ -7,4 +7,5 @@ module.exports = {
     topicController: require('./topic.controller'),
     flashCardController: require('./flashCard.controller'),
     progressController: require('./progress.controller'),
+    gameController: require('./game.controller'),
 };

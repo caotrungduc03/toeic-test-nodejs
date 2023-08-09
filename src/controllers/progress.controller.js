@@ -55,6 +55,34 @@ const getProgressCardsReview = catchAsync(async (req, res) => {
     res.status(200).json(response(200, 'Success', cards));
 });
 
+const getProgressCardsDaily = catchAsync(async (req, res) => {
+    const { _id } = req.user;
+    const limit = 10;
+
+    const cardStudies = await CardStudy.find({
+        userId: _id,
+        type: 'flash-card',
+    })
+        .select('-review')
+        .limit(limit);
+
+    const cardIds = cardStudies.map((cardStudy) => cardStudy.cardId);
+
+    const cards = await FlashCard.find({
+        _id: { $in: cardIds },
+    }).select(['-__v', '-createdAt', '-updatedAt']);
+
+    const cardsWithStatus = cards.map((card) => {
+        const cardStudy = cardStudies.find((cs) => cs.cardId.equals(card._id));
+        return {
+            ...card.toObject(),
+            status: cardStudy ? cardStudy.status : null,
+        };
+    });
+
+    res.status(200).json(response(200, 'Success', cardsWithStatus));
+});
+
 const updateLessonStatus = catchAsync(async (req, res) => {
     const { _id } = req.user;
     const { lessonId } = req.query;
@@ -105,8 +133,12 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     const [fCard, qCard] = await Promise.all([
-        FlashCard.findOne({ _id: cardId }).populate('course', 'group'),
-        QuestionCard.findOne({ _id: cardId }).populate('course', 'group'),
+        FlashCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .populate('topic', 'cards'),
+        QuestionCard.findOne({ _id: cardId })
+            .populate('course', 'group')
+            .populate('topic', 'cards'),
     ]);
 
     const card = fCard ?? qCard;
@@ -115,6 +147,8 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     if (!card) {
         throw new ApiError('Card not found', 404);
     }
+
+    const { cards } = card.topic;
 
     let cardStudy = await CardStudy.findOne({ userId: _id, cardId });
 
@@ -129,9 +163,9 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
     }
 
     if (answer === 'true') {
-        if (status !== '2') {
-            cardStudy.status = '2';
+        cardStudy.status = '2';
 
+        if (status !== '2') {
             let courseStudy = await CourseStudy.findOne({
                 userId: _id,
                 courseId: card.course._id,
@@ -152,21 +186,27 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
             if (topicIndex === -1) {
                 courseStudy.topics.push({
                     topicId: card.topic._id,
-                    progress: 1,
+                    progress: Math.round((1 / cards.length) * 100),
                 });
             } else {
-                courseStudy.topics[topicIndex].progress++;
+                let cardStudies = await CardStudy.find({
+                    userId: _id,
+                    cardId: { $in: cards },
+                    status: '2',
+                });
+
+                courseStudy.topics[topicIndex].progress = Math.round(
+                    ((cardStudies.length + 1) / cards.length) * 100,
+                );
             }
 
             await courseStudy.save();
         }
     } else {
+        cardStudy.status = '1';
+
         if (type === 'question-card' && card.course.group !== 'test') {
             cardStudy.review = '1';
-        }
-
-        if (status !== '1') {
-            cardStudy.status = '1';
         }
 
         if (status === '2') {
@@ -179,7 +219,15 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
                 topic.topicId.equals(card.topic._id),
             );
 
-            courseStudy.topics[topicIndex].progress--;
+            let cardStudies = await CardStudy.find({
+                userId: _id,
+                cardId: { $in: cards },
+                status: '2',
+            });
+
+            courseStudy.topics[topicIndex].progress = Math.round(
+                ((cardStudies.length - 1) / cards.length) * 100,
+            );
 
             await courseStudy.save();
         }
@@ -296,4 +344,5 @@ module.exports = {
     updateCardStudyReview,
     getCalendarStudy,
     updateCalendarStudy,
+    getProgressCardsDaily,
 };
