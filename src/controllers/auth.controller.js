@@ -22,13 +22,19 @@ const register = catchAsync(async (req, res) => {
     const emailRegex =
         /^[a-zA-Z0-9_.]{6,32}@([a-zA-Z]{2,12})(\.[a-zA-Z]{2,12})+$/;
     if (!emailRegex.test(email)) {
-        throw new ApiError('Email address is not valid', 400);
+        throw new ApiError(
+            'Email is not valid, email must be in the form example@gmail.com',
+            400,
+        );
     }
 
     const passwordRegex =
         /^(?=.*[A-Z])(?=.*[!@#$%^&*_?])(?=.*[0-9])([a-zA-Z0-9!@#$%^&*_?]){7,}$/;
     if (!passwordRegex.test(password)) {
-        throw new ApiError('Password is not in the correct format', 400);
+        throw new ApiError(
+            'Password requirements: minimum length of 7 characters, at least one capital letter, one number, and one special character',
+            400,
+        );
     }
 
     if (password !== confirmPassword) {
@@ -110,7 +116,10 @@ const resetPassword = catchAsync(async (req, res) => {
     const passwordRegex =
         /^(?=.*[A-Z])(?=.*[!@#$%^&*_?])(?=.*[0-9])([a-zA-Z0-9!@#$%^&*_?]){7,}$/;
     if (!passwordRegex.test(password)) {
-        throw new ApiError('Password is not in the correct format', 400);
+        throw new ApiError(
+            'Password requirements: minimum length of 7 characters, at least one capital letter, one number, and one special character',
+            400,
+        );
     }
 
     if (password !== confirmPassword) {
@@ -145,7 +154,7 @@ const resetPassword = catchAsync(async (req, res) => {
         .json(response(httpStatus.OK, 'Updated password', user));
 });
 
-const getMe = catchAsync(async (req, res) => {
+const getProfile = catchAsync(async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
 
@@ -165,7 +174,10 @@ const updateProfile = catchAsync(async (req, res) => {
     const emailRegex =
         /^[a-zA-Z0-9_.]{6,32}@([a-zA-Z]{2,12})(\.[a-zA-Z]{2,12})+$/;
     if (!emailRegex.test(userRaw.email)) {
-        throw new ApiError('Email address is not valid', 400);
+        throw new ApiError(
+            'Email is not valid, email must be in the form example@gmail.com',
+            400,
+        );
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, userRaw, {
@@ -185,6 +197,6 @@ module.exports = {
     login,
     forgotPassword,
     resetPassword,
-    getMe,
+    getProfile,
     updateProfile,
 };

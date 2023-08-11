@@ -17,7 +17,7 @@ authRouter.route('/reset-password').post(authController.resetPassword);
 authRouter.use(authMiddleware);
 authRouter.use(roleMiddleware(['user', 'admin']));
 
-authRouter.route('/me').get(authController.getMe);
+authRouter.route('/me').get(authController.getProfile);
 authRouter
     .route('/profile')
     .put(uploadCloud.single('avatar'), authController.updateProfile);
