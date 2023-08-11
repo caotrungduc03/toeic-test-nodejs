@@ -154,7 +154,7 @@ const resetPassword = catchAsync(async (req, res) => {
         .json(response(httpStatus.OK, 'Updated password', user));
 });
 
-const getMe = catchAsync(async (req, res) => {
+const getProfile = catchAsync(async (req, res) => {
     const userId = req.user.id;
     const user = await User.findById(userId);
 
@@ -197,6 +197,6 @@ module.exports = {
     login,
     forgotPassword,
     resetPassword,
-    getMe,
+    getProfile,
     updateProfile,
 };
