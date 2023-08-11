@@ -6,36 +6,30 @@ const questionCardSchema = new Schema(
     {
         paragraphs: {
             type: String,
+            trim: true,
         },
-        question: {
-            hint: {
-                type: String,
-            },
-            image: {
-                type: String,
-                default: null,
-            },
-            sound: {
-                type: String,
-                default: null,
-            },
-            texts: {
-                type: String,
-                trim: true,
-            },
+        image: {
+            type: String,
+            trim: true,
         },
-        answer: {
-            correct: {
+        sound: {
+            type: String,
+            trim: true,
+        },
+        texts: {
+            type: String,
+            trim: true,
+        },
+        correct: {
+            type: String,
+            required: true,
+        },
+        choices: [
+            {
                 type: String,
                 required: true,
             },
-            choices: [
-                {
-                    type: String,
-                    required: true,
-                },
-            ],
-        },
+        ],
         orderIndex: {
             type: Number,
         },
@@ -44,7 +38,6 @@ const questionCardSchema = new Schema(
             ref: 'Topic',
             require: true,
         },
-
         course: {
             type: Schema.Types.ObjectId,
             ref: 'Course',

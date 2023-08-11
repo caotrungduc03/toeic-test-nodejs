@@ -1,5 +1,5 @@
 const catchAsync = require('../utils/catchAsync');
-const { QuestionCard, Topic, CardStudy } = require('../models');
+const { QuestionCard, Topic, CardStudy, Course } = require('../models');
 const ApiError = require('../utils/ApiError');
 const httpStatus = require('http-status');
 const response = require('../utils/response');
@@ -42,27 +42,36 @@ const getQuestionCard = catchAsync(async (req, res) => {
 
 const createQuestionCard = catchAsync(async (req, res) => {
     const newQuestionCard = req.body;
-    const { children, topicName } = newQuestionCard;
+    const { topicName, courseName, correct, choices } = newQuestionCard;
 
-    if (!children.length || !topicName) {
+    if (!topicName || !courseName || !correct || !choices) {
         throw new ApiError(
-            'Question, answer or topic name is required!',
+            'Topic name, course name, correct and choices are required!',
             httpStatus.BAD_REQUEST,
         );
     }
 
-    const topic = await Topic.findOne({ name: topicName });
+    const course = await Course.findOne({ name: courseName });
+    if (!course) {
+        throw new ApiError('Course not found', 404);
+    }
+
+    const topic = await Topic.findOne({
+        name: topicName,
+        course: course._id,
+    });
 
     if (!topic) {
         throw new ApiError('Topic not found!', httpStatus.NOT_FOUND);
     }
 
     delete newQuestionCard.topicName;
+    delete newQuestionCard.courseName;
 
     const questionCard = await QuestionCard.create({
         ...newQuestionCard,
         topic: topic._id,
-        course: topic.course,
+        course: course._id,
     });
 
     topic.cards.push(questionCard._id);
@@ -76,9 +85,18 @@ const createQuestionCard = catchAsync(async (req, res) => {
 const updateQuestionCard = catchAsync(async (req, res) => {
     const { questionCardId } = req.params;
     const newQuestionCard = req.body;
-    const { topicName } = newQuestionCard;
+    const { topicName, courseName } = newQuestionCard;
 
-    const topic = await Topic.findOne({ name: topicName });
+    const course = await Course.findOne({ name: courseName });
+    if (!course) {
+        throw new ApiError('Course not found', 404);
+    }
+
+    const topic = await Topic.findOne({
+        name: topicName,
+        course: course._id,
+    });
+
     if (!topic) {
         throw new ApiError('Topic not found!', httpStatus.NOT_FOUND);
     }

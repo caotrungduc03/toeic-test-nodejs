@@ -8,4 +8,5 @@ module.exports = {
     flashCardController: require('./flashCard.controller'),
     progressController: require('./progress.controller'),
     gameController: require('./game.controller'),
+    importController: require('./import.controller'),
 };
