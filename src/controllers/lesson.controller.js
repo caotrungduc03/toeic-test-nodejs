@@ -26,11 +26,11 @@ const getLesson = catchAsync(async (req, res) => {
 
 const createLesson = catchAsync(async (req, res) => {
     const newLesson = req.body;
-    const { children, courseName } = newLesson;
+    const { children, courseName, orderIndex } = newLesson;
 
-    if (!children || !courseName) {
+    if (!children || !courseName || !orderIndex) {
         throw new ApiError(
-            'children or course name  are required!',
+            'Children, course name and order index are required',
             httpStatus.BAD_REQUEST,
         );
     }

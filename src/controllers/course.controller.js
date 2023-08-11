@@ -65,10 +65,10 @@ const getCourse = catchAsync(async (req, res) => {
 
 const createCourse = catchAsync(async (req, res) => {
     const rawCourse = req.body;
-    const { name, group } = rawCourse;
+    const { name, group, orderIndex } = rawCourse;
 
-    if (!name || !group) {
-        throw new ApiError('Name and group are required', 400);
+    if (!name || !group || !orderIndex) {
+        throw new ApiError('Name, group and order index are required', 400);
     }
 
     const isExists = await Course.exists({ name });

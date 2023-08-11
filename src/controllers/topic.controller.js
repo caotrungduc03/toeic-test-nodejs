@@ -38,11 +38,11 @@ const getTopic = catchAsync(async (req, res) => {
 
 const createTopic = catchAsync(async (req, res) => {
     const rawTopic = req.body;
-    const { topicName, courseName, onModel } = rawTopic;
+    const { topicName, courseName, onModel, orderIndex } = rawTopic;
 
-    if (!topicName || !courseName || !onModel) {
+    if (!topicName || !courseName || !onModel || !orderIndex) {
         throw new ApiError(
-            'Topic name, course name and on model are required',
+            'Topic name, course name, on model and order index are required',
             400,
         );
     }
@@ -56,7 +56,7 @@ const createTopic = catchAsync(async (req, res) => {
         throw new ApiError('Course not found', 404);
     }
 
-    if (course._id.equals(topic?.course._id)) {
+    if (topicName === topic?.name && course._id.equals(topic?.course._id)) {
         throw new ApiError('Topic is already exists', 400);
     }
 
