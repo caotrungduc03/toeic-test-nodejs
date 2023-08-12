@@ -10,6 +10,4 @@ const shuffleArray = (arr) => {
     }
 };
 
-module.exports = {
-    shuffleArray,
-};
+module.exports = shuffleArray;

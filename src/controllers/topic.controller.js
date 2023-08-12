@@ -2,6 +2,7 @@ const { Topic, Course, FlashCard, QuestionCard } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
+const shuffleArray = require('../utils/shuffleArray');
 
 const getTopics = catchAsync(async (req, res) => {
     const topics = await Topic.find()
@@ -32,6 +33,10 @@ const getTopic = catchAsync(async (req, res) => {
     }
 
     topic.onModel = undefined;
+
+    topic.cards.forEach((card) => {
+        shuffleArray(card.choices);
+    });
 
     res.status(200).json(response(200, 'Success', topic));
 });
