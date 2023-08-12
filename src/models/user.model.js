@@ -9,7 +9,8 @@ const userSchema = new Schema(
     {
         avatar: {
             type: String,
-            default: 'https://static.thenounproject.com/png/5034901-200.png',
+            default:
+                'https://res.cloudinary.com/dti4uympa/image/upload/v1691856480/upload_avatar/5034901-200_fnlfab.png',
         },
         name: {
             type: String,

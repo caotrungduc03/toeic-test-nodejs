@@ -32,11 +32,13 @@ const getTopic = catchAsync(async (req, res) => {
         throw new ApiError('Topic not found', 404);
     }
 
-    topic.onModel = undefined;
+    if (topic.onModel === 'QuestionCard') {
+        topic.cards.forEach((card) => {
+            shuffleArray(card.choices);
+        });
+    }
 
-    topic.cards.forEach((card) => {
-        shuffleArray(card.choices);
-    });
+    topic.onModel = undefined;
 
     res.status(200).json(response(200, 'Success', topic));
 });
