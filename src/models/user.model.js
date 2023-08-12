@@ -9,7 +9,7 @@ const userSchema = new Schema(
     {
         avatar: {
             type: String,
-            default: 'avatar-default.jpg',
+            default: 'https://static.thenounproject.com/png/5034901-200.png',
         },
         name: {
             type: String,

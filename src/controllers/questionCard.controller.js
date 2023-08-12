@@ -14,6 +14,7 @@ const getQuestionCards = catchAsync(async (req, res) => {
             path: 'course',
             select: 'name',
         });
+
     res.status(httpStatus.OK).json(
         response(httpStatus.OK, 'Success', questionCards),
     );

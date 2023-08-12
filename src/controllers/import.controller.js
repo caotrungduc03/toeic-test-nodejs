@@ -118,13 +118,27 @@ const importArray = catchAsync(async (req, res) => {
         case 'flash-card':
             results = await Promise.all(
                 data?.map(async (item) => {
-                    const { word, ipa, texts, topicName } = item;
+                    const { word, ipa, texts, topicName, courseName } = item;
 
-                    if (!word || !ipa || !texts || !topicName) {
+                    if (!word || !ipa || !texts || !topicName || !courseName) {
                         throw new ApiError(
-                            'Word, ipa, texts and topic name are required',
+                            'Word, ipa, texts, topic name and course name are required',
                             400,
                         );
+                    }
+
+                    const course = await Course.findOne({ name: courseName });
+                    if (!course) {
+                        throw new ApiError('Course not found', 404);
+                    }
+
+                    const topic = await Topic.findOne({
+                        name: topicName,
+                        course: course._id,
+                    });
+
+                    if (!topic) {
+                        throw new ApiError('Topic not found', 404);
                     }
 
                     const isExists = await FlashCard.exists({ word });
@@ -132,18 +146,13 @@ const importArray = catchAsync(async (req, res) => {
                         throw new ApiError('Flash card is already exists', 400);
                     }
 
-                    const topic = await Topic.findOne({ name: topicName });
-
-                    if (!topic) {
-                        throw new ApiError('Topic not found', 404);
-                    }
-
                     delete item.topicName;
+                    delete item.courseName;
 
                     const flashCard = await FlashCard.create({
                         ...item,
                         topic: topic._id,
-                        course: topic.course,
+                        course: course._id,
                     });
 
                     topic.cards.push(flashCard._id);

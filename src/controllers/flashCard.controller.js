@@ -1,4 +1,4 @@
-const { FlashCard, Topic, CardStudy } = require('../models');
+const { FlashCard, Topic, CardStudy, Course } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
@@ -25,10 +25,27 @@ const getFlashCard = catchAsync(async (req, res) => {
 
 const createFlashCard = catchAsync(async (req, res) => {
     const rawFlashCard = req.body;
-    const { word, ipa, texts, topicName } = rawFlashCard;
+    const { word, ipa, texts, topicName, courseName } = rawFlashCard;
 
-    if (!word || !ipa || !texts || !topicName) {
-        throw new ApiError('Word, ipa, texts and topic name are required', 400);
+    if (!word || !ipa || !texts || !topicName || !courseName) {
+        throw new ApiError(
+            'Word, ipa, texts, topic name and course name are required',
+            400,
+        );
+    }
+
+    const course = await Course.findOne({ name: courseName });
+    if (!course) {
+        throw new ApiError('Course not found', 404);
+    }
+
+    const topic = await Topic.findOne({
+        name: topicName,
+        course: course._id,
+    });
+
+    if (!topic) {
+        throw new ApiError('Topic not found', 404);
     }
 
     const isExists = await FlashCard.exists({ word });
@@ -36,18 +53,13 @@ const createFlashCard = catchAsync(async (req, res) => {
         throw new ApiError('Flash card is already exists', 400);
     }
 
-    const topic = await Topic.findOne({ name: topicName });
-
-    if (!topic) {
-        throw new ApiError('Topic not found', 404);
-    }
-
     delete rawFlashCard.topicName;
+    delete rawFlashCard.courseName;
 
     const flashCard = await FlashCard.create({
         ...rawFlashCard,
         topic: topic._id,
-        course: topic.course,
+        course: course._id,
     });
 
     topic.cards.push(flashCard._id);

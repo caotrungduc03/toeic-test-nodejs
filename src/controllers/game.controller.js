@@ -2,7 +2,7 @@ const { Topic } = require('../models');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const response = require('../utils/response');
-const { shuffleArray } = require('../utils/suffleArray');
+const shuffleArray = require('../utils/shuffleArray');
 
 const getRandomAnswers = (correctAnswer, answers) => {
     const answerArr = [];

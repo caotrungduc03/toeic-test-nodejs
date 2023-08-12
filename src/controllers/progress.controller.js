@@ -196,7 +196,10 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
                 });
 
                 courseStudy.topics[topicIndex].progress = Math.round(
-                    ((cardStudies.length + 1) / cards.length) * 100,
+                    Math.min(
+                        ((cardStudies.length + 1) / cards.length) * 100,
+                        100,
+                    ),
                 );
             }
 
@@ -226,7 +229,7 @@ const updateCardStudyStatus = catchAsync(async (req, res) => {
             });
 
             courseStudy.topics[topicIndex].progress = Math.round(
-                ((cardStudies.length - 1) / cards.length) * 100,
+                Math.max(((cardStudies.length - 1) / cards.length) * 100, 0),
             );
 
             await courseStudy.save();
